@@ -4,7 +4,18 @@
  */
 
 const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini';
+
+// Primary model - most cost-effective
+const PRIMARY_MODEL = 'tngtech/deepseek-r1t2-chimera:free';
+
+// Fallback models if primary fails
+const FALLBACK_MODELS = [
+  'nex-agi/deepseek-v3.1-nex-n1:free',
+  'google/gemini-2.0-flash-exp:free',
+  'qwen/qwen-2.5-vl-7b-instruct:free',
+  'google/gemma-3-27b-it:free'
+];
+
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
 
@@ -13,33 +24,49 @@ async function callOpenRouter(messages, { temperature = 0.2, maxTokens = 1024 } 
     throw new Error('OpenRouter API key not configured');
   }
 
-  try {
-    const response = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${API_KEY}`,
-        'HTTP-Referer': APP_URL,
-        'X-Title': 'Link Collector'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages,
-        temperature,
-        max_tokens: maxTokens
-      })
-    });
+  const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+  let lastError = null;
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData?.error?.message || response.statusText);
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const model = modelsToTry[i];
+    try {
+      console.log(`Tutor using model: ${model}`);
+      const response = await fetch(OPENROUTER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${API_KEY}`,
+          'HTTP-Referer': APP_URL,
+          'X-Title': 'Link Collector'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages,
+          temperature,
+          max_tokens: maxTokens
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error?.message || response.statusText);
+      }
+
+      const data = await response.json();
+      const result = data?.choices?.[0]?.message?.content?.trim() || 'I could not generate a response.';
+      console.log(`✓ Tutor success with model: ${model}`);
+      return result;
+    } catch (err) {
+      lastError = err;
+      console.warn(`✗ Tutor model ${model} failed: ${err.message}`);
+      // Try next model if available
+      if (i < modelsToTry.length - 1) {
+        continue;
+      }
     }
-
-    const data = await response.json();
-    return data?.choices?.[0]?.message?.content?.trim() || 'I could not generate a response.';
-  } catch (err) {
-    throw new Error(`Failed to call OpenRouter: ${err.message}`);
   }
+
+  throw new Error(`All tutor models failed. Last error: ${lastError?.message}`);
 }
 
 /**

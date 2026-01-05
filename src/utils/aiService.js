@@ -4,54 +4,81 @@
  */
 
 const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini';
+
+// Primary model - most cost-effective
+const PRIMARY_MODEL = 'tngtech/deepseek-r1t2-chimera:free';
+
+// Fallback models if primary fails
+const FALLBACK_MODELS = [
+  'nex-agi/deepseek-v3.1-nex-n1:free',
+  'google/gemini-2.0-flash-exp:free',
+  'qwen/qwen-2.5-vl-7b-instruct:free',
+  'google/gemma-3-27b-it:free'
+];
+
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
 
 /**
- * Make a request to OpenRouter chat completions endpoint
+ * Make a request to OpenRouter chat completions endpoint with fallback support
  */
 async function callOpenRouter(prompt) {
   if (!API_KEY) {
     throw new Error('API key not configured. Please set VITE_OPENROUTER_API_KEY in .env file.');
   }
 
-  try {
-    const response = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${API_KEY}`,
-        'HTTP-Referer': APP_URL,
-        'X-Title': 'Link Collector'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: [
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.4,
-        max_tokens: 200
-      })
-    });
+  const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+  let lastError = null;
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData?.error?.message || response.statusText);
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const model = modelsToTry[i];
+    try {
+      console.log(`Trying model: ${model}`);
+      const response = await fetch(OPENROUTER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${API_KEY}`,
+          'HTTP-Referer': APP_URL,
+          'X-Title': 'Link Collector'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.4,
+          max_tokens: 200
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error?.message || response.statusText);
+      }
+
+      const data = await response.json();
+      const result = data?.choices?.[0]?.message?.content?.trim() || '';
+      console.log(`✓ Success with model: ${model}`);
+      return result;
+    } catch (error) {
+      lastError = error;
+      console.warn(`✗ Model ${model} failed: ${error.message}`);
+      // Try next model if available
+      if (i < modelsToTry.length - 1) {
+        continue;
+      }
     }
-
-    const data = await response.json();
-    return data?.choices?.[0]?.message?.content?.trim() || '';
-  } catch (error) {
-    throw new Error(`API Error: ${error.message}`);
   }
+
+  throw new Error(`All models failed. Last error: ${lastError?.message}`);
 }
 
 /**
- * Chat with AI - supports streaming
+ * Chat with AI - supports streaming with fallback
  */
 export async function chatWithAI(messages, options = {}) {
   if (!API_KEY) {
@@ -59,32 +86,37 @@ export async function chatWithAI(messages, options = {}) {
   }
 
   const { stream = false, signal, onChunk } = options;
+  const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
+  let lastError = null;
 
-  try {
-    const response = await fetch(OPENROUTER_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${API_KEY}`,
-        'HTTP-Referer': APP_URL,
-        'X-Title': 'Link Collector'
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 2000,
-        stream: stream
-      }),
-      signal
-    });
+  for (let i = 0; i < modelsToTry.length; i++) {
+    const model = modelsToTry[i];
+    try {
+      console.log(`Chat using model: ${model}`);
+      const response = await fetch(OPENROUTER_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${API_KEY}`,
+          'HTTP-Referer': APP_URL,
+          'X-Title': 'Link Collector'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: messages,
+          temperature: 0.7,
+          max_tokens: 2000,
+          stream: stream
+        }),
+        signal
+      });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData?.error?.message || response.statusText);
-    }
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData?.error?.message || response.statusText);
+      }
 
-    if (stream) {
+      if (stream) {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let fullResponse = '';
@@ -115,17 +147,28 @@ export async function chatWithAI(messages, options = {}) {
         }
       }
 
-      return fullResponse;
-    } else {
-      const data = await response.json();
-      return data?.choices?.[0]?.message?.content?.trim() || '';
+        console.log(`✓ Chat success with model: ${model}`);
+        return fullResponse;
+      } else {
+        const data = await response.json();
+        const result = data?.choices?.[0]?.message?.content?.trim() || '';
+        console.log(`✓ Chat success with model: ${model}`);
+        return result;
+      }
+    } catch (error) {
+      if (error.name === 'AbortError') {
+        throw error;
+      }
+      lastError = error;
+      console.warn(`✗ Chat model ${model} failed: ${error.message}`);
+      // Try next model if available
+      if (i < modelsToTry.length - 1) {
+        continue;
+      }
     }
-  } catch (error) {
-    if (error.name === 'AbortError') {
-      throw error;
-    }
-    throw new Error(`API Error: ${error.message}`);
   }
+
+  throw new Error(`All chat models failed. Last error: ${lastError?.message}`);
 }
 
 /**
