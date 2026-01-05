@@ -8,6 +8,7 @@ import ChatPage from './components/ChatPage';
 import { extractContentFromURL } from './utils/contentExtractor';
 import { prepareSearchData, createSearchEngine, performSearch, debounce } from './utils/searchEngine';
 import './App.css';
+import { Analytics } from "@vercel/analytics/react"
 
 function App() {
   const [categories, setCategories] = useState(() => {
@@ -622,6 +623,7 @@ function App() {
           </>
         )}
       </div>
+      <Analytics />
     </div>
   );
 }
