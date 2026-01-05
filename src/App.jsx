@@ -7,7 +7,6 @@ import ChatHistory from './components/ChatHistory';
 import ChatPage from './components/ChatPage';
 import { extractContentFromURL } from './utils/contentExtractor';
 import { prepareSearchData, createSearchEngine, performSearch, debounce } from './utils/searchEngine';
-import { shouldUseFallback, generateSearchFallback } from './utils/searchFallback';
 import './App.css';
 
 function App() {
@@ -118,29 +117,8 @@ function App() {
     const results = performSearch(searchEngineRef.current, debouncedSearchQuery);
     setSearchResults(results);
     
-    // Check if we need AI fallback
-    if (shouldUseFallback(results)) {
-      setIsLoadingFallback(true);
-      generateSearchFallback(debouncedSearchQuery)
-        .then(fallback => {
-          setSearchFallback(fallback);
-        })
-        .catch(error => {
-          console.error('Fallback generation failed:', error);
-          setSearchFallback({
-            type: 'error',
-            query: debouncedSearchQuery,
-            explanation: `No articles found for "${debouncedSearchQuery}".`,
-            suggestions: [],
-            googleSearchUrl: `https://www.google.com/search?q=${encodeURIComponent(debouncedSearchQuery + ' news')}`
-          });
-        })
-        .finally(() => {
-          setIsLoadingFallback(false);
-        });
-    } else {
-      setSearchFallback(null);
-    }
+    // AI fallback disabled - only search local categories and links
+    setSearchFallback(null);
   }, [debouncedSearchQuery]);
 
   // Close dropdown when clicking outside
