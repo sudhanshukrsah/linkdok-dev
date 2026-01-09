@@ -18,7 +18,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, model, stream = false } = req.body;
+    const { messages, model, stream = false, temperature = 0.7, maxTokens = 4000 } = req.body;
 
     if (!messages || !Array.isArray(messages)) {
       return res.status(400).json({ 
@@ -35,13 +35,13 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${API_KEY}`,
         'HTTP-Referer': APP_URL,
-        'X-Title': 'Link Collector'
+        'X-Title': 'LinkDok - AI Learning Platform'
       },
       body: JSON.stringify({
         model: model || 'tngtech/deepseek-r1t2-chimera:free',
         messages,
-        temperature: 0.4,
-        max_tokens: 200,
+        temperature,
+        max_tokens: maxTokens,
         stream
       })
     });
