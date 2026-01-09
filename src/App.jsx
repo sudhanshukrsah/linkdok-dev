@@ -1,16 +1,23 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Plus, Search, Moon, Sun, ChevronDown, FolderPlus, LinkIcon } from 'lucide-react';
+import { Plus, Search, Moon, Sun, ChevronDown, FolderPlus, LinkIcon, HelpCircle } from 'lucide-react';
 import CategorySection from './components/CategorySection';
 import AddLinkModal from './components/AddLinkModal';
 import AddCategoryModal from './components/AddCategoryModal';
 import ChatHistory from './components/ChatHistory';
 import ChatPage from './components/ChatPage';
+import IntroVideo from './components/IntroVideo';
 import { extractContentFromURL } from './utils/contentExtractor';
 import { prepareSearchData, createSearchEngine, performSearch, debounce } from './utils/searchEngine';
 import './App.css';
 import { Analytics } from "@vercel/analytics/react"
 
 function App() {
+  const [showIntroVideo, setShowIntroVideo] = useState(() => {
+    // Check if user has visited before
+    const hasVisited = localStorage.getItem('linkdok_visited');
+    return !hasVisited;
+  });
+
   const [categories, setCategories] = useState(() => {
     // Initialize from localStorage
     const savedCategories = localStorage.getItem('linkCollectorCategories');
@@ -423,8 +430,17 @@ function App() {
       });
   }, [categories, debouncedSearchQuery, searchResults, filterCategory]);
 
+  const handleIntroComplete = () => {
+    // Mark that user has visited
+    localStorage.setItem('linkdok_visited', 'true');
+    setShowIntroVideo(false);
+  };
+
   return (
-    <div className="app">
+    <>
+      {showIntroVideo && <IntroVideo onComplete={handleIntroComplete} />}
+      
+      <div className="app">
       {/* Chat History Sidebar */}
       <ChatHistory
         categories={categories}
@@ -453,6 +469,13 @@ function App() {
         <div className="header-content">
           <img src={isDarkMode ? "/LinkDok-logo.svg" : "/LinkDok-logo-day.svg"} alt="LinkDoc" className="app-logo" />
           <div className="header-actions">
+            <button 
+              className="btn btn-icon"
+              onClick={() => setShowIntroVideo(true)}
+              title="How to Use"
+            >
+              <HelpCircle size={18} />
+            </button>
             <button 
               className="btn btn-icon"
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -624,7 +647,8 @@ function App() {
         )}
       </div>
       <Analytics />
-    </div>
+      </div>
+    </>
   );
 }
 

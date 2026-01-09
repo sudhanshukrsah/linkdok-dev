@@ -2,6 +2,17 @@
   min-height: 100vh;
   display: flex;
   position: relative;
+  background-image: url('/background-linkdok.avif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+
+/* Remove background in light mode */
+body.light-mode .app {
+  background-image: none;
+  background-color: var(--bg-primary);
 }
 
 /* Main App Container */
