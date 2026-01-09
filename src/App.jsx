@@ -6,12 +6,27 @@ import AddCategoryModal from './components/AddCategoryModal';
 import ChatHistory from './components/ChatHistory';
 import ChatPage from './components/ChatPage';
 import IntroVideo from './components/IntroVideo';
+import MobileBlocker from './components/MobileBlocker';
 import { extractContentFromURL } from './utils/contentExtractor';
 import { prepareSearchData, createSearchEngine, performSearch, debounce } from './utils/searchEngine';
 import './App.css';
 import { Analytics } from "@vercel/analytics/react"
 
 function App() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if device is mobile
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const [showIntroVideo, setShowIntroVideo] = useState(() => {
     // Check if user has visited before
     const hasVisited = localStorage.getItem('linkdok_visited');
@@ -435,6 +450,11 @@ function App() {
     localStorage.setItem('linkdok_visited', 'true');
     setShowIntroVideo(false);
   };
+
+  // Show mobile blocker on mobile devices
+  if (isMobile) {
+    return <MobileBlocker />;
+  }
 
   return (
     <>
