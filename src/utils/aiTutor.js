@@ -17,7 +17,7 @@ const FALLBACK_MODELS = [
   'google/gemma-3-27b-it:free'
 ];
 
-async function callOpenRouter(messages, { temperature = 0.2, maxTokens = 1024 } = {}) {
+async function callOpenRouter(messages, { temperature = 0.3, maxTokens = 3000 } = {}) {
   const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
   let lastError = null;
 
@@ -32,7 +32,9 @@ async function callOpenRouter(messages, { temperature = 0.2, maxTokens = 1024 } 
         },
         body: JSON.stringify({
           model: model,
-          messages
+          messages,
+          temperature,
+          maxTokens
         })
       });
 

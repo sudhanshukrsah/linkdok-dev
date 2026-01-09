@@ -40,7 +40,9 @@ async function callOpenRouter(prompt) {
               role: 'user',
               content: prompt
             }
-          ]
+          ],
+          temperature: 0.5,
+          maxTokens: 1000
         })
       });
 
@@ -86,6 +88,8 @@ export async function chatWithAI(messages, options = {}) {
         body: JSON.stringify({
           model: model,
           messages: messages,
+          temperature: 0.7,
+          maxTokens: 4000,
           stream: stream
         }),
         signal
