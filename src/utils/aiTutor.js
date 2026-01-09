@@ -1,9 +1,10 @@
 /**
- * AI Tutor Service - Using OpenRouter chat completions
+ * AI Tutor Service - Using OpenRouter via Serverless API
  * Answers questions using resources + general AI knowledge
  */
 
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+// Use serverless API endpoint instead of direct API calls
+const API_ENDPOINT = '/api/chat';
 
 // Primary model - most cost-effective
 const PRIMARY_MODEL = 'tngtech/deepseek-r1t2-chimera:free';
@@ -16,14 +17,7 @@ const FALLBACK_MODELS = [
   'google/gemma-3-27b-it:free'
 ];
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-
 async function callOpenRouter(messages, { temperature = 0.2, maxTokens = 1024 } = {}) {
-  if (!API_KEY) {
-    throw new Error('OpenRouter API key not configured');
-  }
-
   const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
   let lastError = null;
 
@@ -31,19 +25,14 @@ async function callOpenRouter(messages, { temperature = 0.2, maxTokens = 1024 } 
     const model = modelsToTry[i];
     try {
       console.log(`Tutor using model: ${model}`);
-      const response = await fetch(OPENROUTER_URL, {
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`,
-          'HTTP-Referer': APP_URL,
-          'X-Title': 'Link Collector'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: model,
-          messages,
-          temperature,
-          max_tokens: maxTokens
+          messages
         })
       });
 

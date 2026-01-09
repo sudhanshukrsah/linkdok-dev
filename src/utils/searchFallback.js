@@ -3,10 +3,9 @@
  * Provides Google-like "intent understanding" when no articles match
  */
 
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
-const MODEL = import.meta.env.VITE_OPENROUTER_MODEL || 'openai/gpt-4o-mini';
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
+// Use serverless API endpoint instead of direct API calls
+const API_ENDPOINT = '/api/chat';
+const MODEL = 'tngtech/deepseek-r1t2-chimera:free';
 
 /**
  * Minimum relevance score to consider results valid
@@ -15,21 +14,14 @@ const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ?
 const MIN_RELEVANCE_THRESHOLD = 45; // 45% relevance
 
 /**
- * Call OpenRouter API
+ * Call OpenRouter API via serverless function
  */
 async function callOpenRouter(prompt, maxTokens = 500) {
-  if (!API_KEY) {
-    throw new Error('API key not configured');
-  }
-
   try {
-    const response = await fetch(OPENROUTER_URL, {
+    const response = await fetch(API_ENDPOINT, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${API_KEY}`,
-        'HTTP-Referer': APP_URL,
-        'X-Title': 'Link Collector - Search Fallback'
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: MODEL,
@@ -38,9 +30,7 @@ async function callOpenRouter(prompt, maxTokens = 500) {
             role: 'user',
             content: prompt
           }
-        ],
-        temperature: 0.7,
-        max_tokens: maxTokens
+        ]
       })
     });
 

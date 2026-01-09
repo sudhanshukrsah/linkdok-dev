@@ -1,9 +1,10 @@
 /**
- * AI Service using OpenRouter API
- * For link summarization and chat functionality
+ * AI Service using OpenRouter API via Serverless Functions
+ * API keys are kept secure on the server
  */
 
-const API_KEY = import.meta.env.VITE_OPENROUTER_API_KEY;
+// Use serverless API endpoint instead of direct API calls
+const API_ENDPOINT = '/api/chat';
 
 // Primary model - most cost-effective
 const PRIMARY_MODEL = 'tngtech/deepseek-r1t2-chimera:free';
@@ -16,17 +17,10 @@ const FALLBACK_MODELS = [
   'google/gemma-3-27b-it:free'
 ];
 
-const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const APP_URL = import.meta.env.VITE_APP_URL || (typeof window !== 'undefined' ? window.location.origin : '');
-
 /**
- * Make a request to OpenRouter chat completions endpoint with fallback support
+ * Make a request to OpenRouter via serverless function with fallback support
  */
 async function callOpenRouter(prompt) {
-  if (!API_KEY) {
-    throw new Error('API key not configured. Please set VITE_OPENROUTER_API_KEY in .env file.');
-  }
-
   const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
   let lastError = null;
 
@@ -34,13 +28,10 @@ async function callOpenRouter(prompt) {
     const model = modelsToTry[i];
     try {
       console.log(`Trying model: ${model}`);
-      const response = await fetch(OPENROUTER_URL, {
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`,
-          'HTTP-Referer': APP_URL,
-          'X-Title': 'Link Collector'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: model,
@@ -49,15 +40,13 @@ async function callOpenRouter(prompt) {
               role: 'user',
               content: prompt
             }
-          ],
-          temperature: 0.4,
-          max_tokens: 200
+          ]
         })
       });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData?.error?.message || response.statusText);
+        throw new Error(errorData?.error || response.statusText);
       }
 
       const data = await response.json();
@@ -81,10 +70,6 @@ async function callOpenRouter(prompt) {
  * Chat with AI - supports streaming with fallback
  */
 export async function chatWithAI(messages, options = {}) {
-  if (!API_KEY) {
-    throw new Error('API key not configured. Please set VITE_OPENROUTER_API_KEY in .env file.');
-  }
-
   const { stream = false, signal, onChunk } = options;
   const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
   let lastError = null;
@@ -93,19 +78,14 @@ export async function chatWithAI(messages, options = {}) {
     const model = modelsToTry[i];
     try {
       console.log(`Chat using model: ${model}`);
-      const response = await fetch(OPENROUTER_URL, {
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${API_KEY}`,
-          'HTTP-Referer': APP_URL,
-          'X-Title': 'Link Collector'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           model: model,
           messages: messages,
-          temperature: 0.7,
-          max_tokens: 2000,
           stream: stream
         }),
         signal

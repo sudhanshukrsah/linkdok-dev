@@ -3,7 +3,8 @@
  * Multi-layer approach for maximum reliability
  */
 
-const DIFFBOT_TOKEN = import.meta.env.VITE_DIFFBOT_TOKEN;
+// Use serverless API endpoint for Diffbot
+const DIFFBOT_ENDPOINT = '/api/extract';
 
 /**
  * Extract text content from a webpage URL
@@ -12,13 +13,9 @@ const DIFFBOT_TOKEN = import.meta.env.VITE_DIFFBOT_TOKEN;
 export async function extractContentFromURL(url) {
   console.log(`[Content Extractor] Extracting content from ${url}`);
   
-  // Method 1: Try Diffbot (most reliable, paid service) - only if token is configured
-  if (DIFFBOT_TOKEN) {
-    const diffbotResult = await tryDiffbotExtraction(url);
-    if (diffbotResult.success) return diffbotResult;
-  } else {
-    console.log('[Content Extractor] Diffbot token not configured, skipping...');
-  }
+  // Method 1: Try Diffbot via serverless function (most reliable, paid service)
+  const diffbotResult = await tryDiffbotExtraction(url);
+  if (diffbotResult.success) return diffbotResult;
   
   // Method 2: Try Jina AI Reader
   const jinaResult = await tryJinaExtraction(url);
@@ -44,15 +41,18 @@ export async function extractContentFromURL(url) {
 }
 
 /**
- * Method 1: Diffbot Article API (professional extraction)
+ * Method 1: Diffbot Article API via serverless function (professional extraction)
  */
 async function tryDiffbotExtraction(url) {
   try {
-    console.log(`[Content Extractor] Method 1: Trying Diffbot API...`);
+    console.log(`[Content Extractor] Method 1: Trying Diffbot API via serverless...`);
     
-    const diffbotUrl = `https://api.diffbot.com/v3/article?token=${DIFFBOT_TOKEN}&url=${encodeURIComponent(url)}`;
-    
-    const response = await fetch(diffbotUrl, {
+    const response = await fetch(DIFFBOT_ENDPOINT, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ url }),
       signal: AbortSignal.timeout(15000)
     });
     
@@ -62,32 +62,13 @@ async function tryDiffbotExtraction(url) {
     
     const data = await response.json();
     
-    if (!data.objects || data.objects.length === 0) {
-      throw new Error('No article found');
+    if (!data.success) {
+      throw new Error(data.error || 'Extraction failed');
     }
     
-    const article = data.objects[0];
+    console.log(`[Content Extractor] ✓ Diffbot successful (${data.extractedText.length} chars)`);
     
-    // Combine title and text
-    let content = '';
-    if (article.title) content += `${article.title}\n\n`;
-    if (article.text) content += article.text;
-    
-    const cleanText = cleanExtractedText(content);
-    
-    if (cleanText.length < 100) {
-      throw new Error('Content too short');
-    }
-    
-    console.log(`[Content Extractor] ✓ Diffbot successful (${cleanText.length} chars)`);
-    
-    return {
-      url,
-      extractedText: cleanText,
-      extractedAt: Date.now(),
-      success: true,
-      method: 'diffbot'
-    };
+    return data;
   } catch (error) {
     console.warn(`Diffbot failed: ${error.message}`);
     return { success: false };
