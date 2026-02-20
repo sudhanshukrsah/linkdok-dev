@@ -4,15 +4,15 @@
  */
 import { rateLimit, getIP, setCorsHeaders, isOriginAllowed, validateMessages } from './_rateLimit.js';
 
-// NVIDIA model ID allow-list – reject anything unexpected
+// NVIDIA model ID allow-list – must stay in sync with NVIDIA_REGISTRY in aiTutor.js
 const ALLOWED_MODELS = new Set([
-  'moonshotai/kimi-k2.5',
-  'writer/palmyra-flash-3-5',
-  'mistralai/devstral-small',
-  'deepseek-ai/deepseek-r1-0528',
-  'mistralai/mistral-large-2-instruct',
-  'qwen/qwen3-235b-a22b',
-  'thudm/glm-4-9b-chat',
+  'moonshotai/kimi-k2.5',                      // kimi-k2.5
+  'stepfun-ai/step-3.5-flash',                 // step-flash
+  'mistralai/devstral-2-123b-instruct-2512',   // devstral
+  'deepseek-ai/deepseek-v3.2',                  // deepseek-v3.2
+  'mistralai/mistral-large-3-675b-instruct-2512', // mistral-large
+  'qwen/qwen3.5-397b-a17b',                    // qwen3.5
+  'z-ai/glm5',                                  // glm5
 ]);
 
 export default async function handler(req, res) {
