@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => {
           rewrite: () => '/v1/chat/completions',
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
-              proxyReq.setHeader('Authorization', `Bearer ${env.NVIDIA_API_KEY}`);
+              proxyReq.setHeader('Authorization', `Bearer ${env.VITE_NVIDIA_API_KEY}`);
               proxyReq.setHeader('Accept', 'application/json');
             });
           }

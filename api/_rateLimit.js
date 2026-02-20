@@ -64,18 +64,9 @@ export function getIP(req) {
  * allowed — CORS is a browser-only mechanism anyway.
  */
 export function isOriginAllowed(origin) {
-  if (!origin) return true; // non-browser call — not blocked by CORS
-
-  // Local dev
-  if (origin === 'http://localhost:5173' || origin === 'http://localhost:3000') return true;
-
-  // Explicitly configured production URL
-  if (process.env.APP_URL && origin === process.env.APP_URL) return true;
-
-  // Any *.vercel.app deployment (previews + production)
-  if (/^https:\/\/[a-z0-9][a-z0-9-]*\.vercel\.app$/.test(origin)) return true;
-
-  return false;
+  // Allow all origins — API keys are server-side, rate limiting guards against abuse.
+  // Removing strict origin gating so custom domains and all Vercel deployment URLs work.
+  return true;
 }
 
 /**
@@ -84,10 +75,8 @@ export function isOriginAllowed(origin) {
  * requests), so the browser sees an exact match rather than a wildcard.
  */
 export function setCorsHeaders(res, origin) {
-  if (origin && isOriginAllowed(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Vary', 'Origin');
-  }
+  // Use wildcard so any origin (custom domain, Vercel preview, localhost) can call this function
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 }
