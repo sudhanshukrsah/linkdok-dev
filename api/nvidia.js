@@ -43,13 +43,13 @@ export default async function handler(req, res) {
     });
   }
 
-  const NVIDIA_API_KEY = process.env.NVIDIA_API_KEY;
+  const NVIDIA_API_KEY = process.env.VITE_NVIDIA_API_KEY;
 
   if (!NVIDIA_API_KEY) {
     // 200 + failure so client-side fallback chain (OpenRouter) kicks in cleanly
     return res.status(200).json({
       success: false,
-      error: 'NVIDIA API key not configured — set NVIDIA_API_KEY in Vercel dashboard'
+      error: 'NVIDIA API key not configured — set VITE_NVIDIA_API_KEY in Vercel dashboard'
     });
   }
 

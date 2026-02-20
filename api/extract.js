@@ -26,13 +26,13 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: rl.retryAfter, rateLimited: true });
   }
 
-  const DIFFBOT_TOKEN = process.env.DIFFBOT_TOKEN;
+  const DIFFBOT_TOKEN = process.env.VITE_DIFFBOT_TOKEN;
 
   if (!DIFFBOT_TOKEN) {
     // Return 200 + failure so the client-side fallback chain (Jina → AllOrigins) kicks in
     return res.status(200).json({
       success: false,
-      error: 'Diffbot token not configured — set DIFFBOT_TOKEN in Vercel dashboard environment variables'
+      error: 'Diffbot token not configured — set VITE_DIFFBOT_TOKEN in Vercel dashboard environment variables'
     });
   }
 
