@@ -2,19 +2,37 @@
  * Vercel Serverless Function - Diffbot Content Extraction API
  * Keeps Diffbot token secure on the server
  */
+import { rateLimit, getIP, setCorsHeaders, isOriginAllowed } from './_rateLimit.js';
 
 export default async function handler(req, res) {
-  // Only allow POST requests
+  const origin = req.headers['origin'];
+  setCorsHeaders(res, origin);
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  if (origin && !isOriginAllowed(origin)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Rate limit: 20 requests / 60 s per IP
+  const ip = getIP(req);
+  const rl = rateLimit(ip, { limit: 20, windowMs: 60_000 });
+  if (!rl.allowed) {
+    res.setHeader('Retry-After', String(rl.retryAfter));
+    return res.status(429).json({ error: 'Too many requests', retryAfter: rl.retryAfter, rateLimited: true });
   }
 
   const DIFFBOT_TOKEN = process.env.DIFFBOT_TOKEN;
 
   if (!DIFFBOT_TOKEN) {
-    return res.status(400).json({ 
-      error: 'Diffbot token not configured',
-      success: false 
+    // Return 200 + failure so the client-side fallback chain (Jina → AllOrigins) kicks in
+    return res.status(200).json({
+      success: false,
+      error: 'Diffbot token not configured — set DIFFBOT_TOKEN in Vercel dashboard environment variables'
     });
   }
 
@@ -89,9 +107,9 @@ export default async function handler(req, res) {
   } catch (error) {
     console.error('Diffbot Extraction Error:', error);
     res.status(200).json({
-      url: req.body.url,
+      url: req.body?.url,
       success: false,
-      error: error.message || 'Failed to extract content'
+      error: 'Failed to extract content'
     });
   }
 }

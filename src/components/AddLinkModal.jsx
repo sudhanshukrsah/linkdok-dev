@@ -1,13 +1,16 @@
 import { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { fetchLinkMetadata } from '../utils/metadata';
+import CustomSelect from './CustomSelect';
 
-function AddLinkModal({ categories, editingLink, onClose, onSave }) {
+function AddLinkModal({ categories, editingLink, onClose, onSave, defaultCategoryId }) {
   const [formData, setFormData] = useState({
     title: '',
     url: '',
     image: '',
-    categoryId: categories[0]?.id || ''
+    categoryId: defaultCategoryId && categories.some(c => c.id === defaultCategoryId)
+      ? defaultCategoryId
+      : (categories[0]?.id || '')
   });
   const [isFetchingMetadata, setIsFetchingMetadata] = useState(false);
   const [urlDebounceTimer, setUrlDebounceTimer] = useState(null);
@@ -100,18 +103,12 @@ function AddLinkModal({ categories, editingLink, onClose, onSave }) {
           <div className="modal-body">
             <div className="form-group">
               <label className="form-label">Category</label>
-              <select
-                className="form-select"
+              <CustomSelect
                 value={formData.categoryId}
-                onChange={(e) => setFormData({ ...formData, categoryId: Number(e.target.value) })}
-                required
-              >
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </option>
-                ))}
-              </select>
+                onChange={(val) => setFormData({ ...formData, categoryId: Number(val) })}
+                options={categories.map(cat => ({ value: cat.id, label: cat.name, icon: '📁' }))}
+                placeholder="Select a category…"
+              />
             </div>
 
             <div className="form-group">

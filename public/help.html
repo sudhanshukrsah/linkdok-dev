@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help & Documentation — LinkDok</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
+
+    /* ── CSS Variables ── */
+    :root {
+      --bg:         #080b12;
+      --bg2:        #0f1420;
+      --bg3:        #161c2e;
+      --card:       rgba(22,28,46,0.82);
+      --border:     rgba(255,255,255,0.07);
+      --border2:    rgba(255,255,255,0.12);
+      --txt:        #e8e8f0;
+      --txt2:       #8892a4;
+      --txt3:       #5a6478;
+      --accent:     #3b82f6;
+      --accent2:    #6366f1;
+      --accent3:    #8b5cf6;
+      --green:      #10b981;
+      --yellow:     #f59e0b;
+      --red:        #ef4444;
+      --sidebar-w:  270px;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      line-height: 1.7;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Background texture ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url('/background-linkdok.avif');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      opacity: 0.10;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout ── */
+    .layout {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* ════════════════════════════════
+       SIDEBAR
+    ════════════════════════════════ */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: rgba(10,12,20,0.92);
+      border-right: 1px solid var(--border);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      display: flex;
+      flex-direction: column;
+      padding: 0 0 2rem;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,0.08) transparent;
+    }
+    .sidebar::-webkit-scrollbar { width: 4px; }
+    .sidebar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+    .sidebar-logo {
+      padding: 1.375rem 1.5rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.625rem;
+      text-decoration: none;
+    }
+    .sidebar-logo img { height: 30px; }
+    .sidebar-logo-tag {
+      font-size: 0.615rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--txt3);
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.2);
+      padding: 0.15rem 0.5rem;
+      border-radius: 20px;
+    }
+
+    .sidebar-section-label {
+      padding: 1.1rem 1.5rem 0.35rem;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--txt3);
+    }
+
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      padding: 0.45rem 1.5rem;
+      font-size: 0.825rem;
+      color: var(--txt2);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .sidebar-nav a:hover,
+    .sidebar-nav a.active {
+      color: var(--txt);
+      background: rgba(59,130,246,0.07);
+      border-left-color: var(--accent);
+    }
+    .sidebar-nav a .nav-icon {
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+      opacity: 0.6;
+    }
+    .sidebar-nav a:hover .nav-icon,
+    .sidebar-nav a.active .nav-icon { opacity: 1; }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem 1.5rem 0;
+      border-top: 1px solid var(--border);
+    }
+    .sidebar-footer a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-decoration: none;
+      opacity: 0.8;
+      transition: opacity 0.15s;
+    }
+    .sidebar-footer a:hover { opacity: 1; }
+
+    /* ════════════════════════════════
+       MAIN CONTENT
+    ════════════════════════════════ */
+    .content {
+      flex: 1;
+      min-width: 0;
+      padding: 3rem 4rem;
+      max-width: 860px;
+    }
+
+    /* ── Section anchors ── */
+    section { scroll-margin-top: 2rem; }
+
+    /* ── Section divider ── */
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 3.5rem 0;
+    }
+
+    /* ── Page title ── */
+    .page-hero {
+      margin-bottom: 3rem;
+    }
+    .page-hero-eyebrow {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .page-hero h1 {
+      font-size: 2.4rem;
+      font-weight: 800;
+      line-height: 1.2;
+      background: linear-gradient(135deg, #e8e8f0 0%, #8892a4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+    .page-hero p {
+      font-size: 1.05rem;
+      color: var(--txt2);
+      max-width: 600px;
+    }
+
+    /* ── Section heading ── */
+    h2 {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: var(--txt);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    h2 .h2-icon {
+      font-size: 1.25rem;
+    }
+    h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--txt);
+      margin: 1.5rem 0 0.5rem;
+    }
+
+    p { color: var(--txt2); margin-bottom: 0.875rem; }
+    p:last-child { margin-bottom: 0; }
+
+    strong { color: var(--txt); font-weight: 600; }
+
+    ul, ol {
+      padding-left: 1.4rem;
+      color: var(--txt2);
+      margin-bottom: 0.875rem;
+    }
+    li { margin-bottom: 0.35rem; }
+    li strong { color: var(--txt); }
+
+    a { color: var(--accent); }
+    a:hover { color: #60a5fa; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      backdrop-filter: blur(12px);
+    }
+    .card + .card { margin-top: 0; }
+
+    /* ── Highlight card ── */
+    .card-accent {
+      border-color: rgba(59,130,246,0.3);
+      background: rgba(59,130,246,0.06);
+    }
+    .card-green { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.06); }
+    .card-yellow { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.06); }
+    .card-red { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
+    .card-purple { border-color: rgba(139,92,246,0.3); background: rgba(139,92,246,0.06); }
+
+    /* ── Grid ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── Inline code ── */
+    code {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 0.15em 0.4em;
+      font-size: 0.85em;
+      font-family: 'Fira Code', 'Cascadia Code', monospace;
+      color: #93c5fd;
+    }
+
+    /* ── Code block ── */
+    pre {
+      background: rgba(0,0,0,0.4);
+      border: 1px solid var(--border2);
+      border-radius: 10px;
+      padding: 1rem 1.25rem;
+      overflow-x: auto;
+      margin-bottom: 1rem;
+    }
+    pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      font-size: 0.875rem;
+      color: #a5d6ff;
+    }
+
+    /* ── Step list ── */
+    .steps { counter-reset: step; list-style: none; padding: 0; }
+    .steps li {
+      counter-increment: step;
+      display: flex;
+      gap: 1rem;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--txt2);
+    }
+    .steps li:last-child { border-bottom: none; }
+    .steps li::before {
+      content: counter(step);
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      background: rgba(59,130,246,0.15);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-top: 0.05rem;
+    }
+
+    /* ── Badge ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+    }
+    .badge-blue { background: rgba(59,130,246,0.15); color: #93c5fd; border: 1px solid rgba(59,130,246,0.25); }
+    .badge-green { background: rgba(16,185,129,0.15); color: #6ee7b7; border: 1px solid rgba(16,185,129,0.25); }
+    .badge-purple { background: rgba(139,92,246,0.15); color: #c4b5fd; border: 1px solid rgba(139,92,246,0.25); }
+    .badge-yellow { background: rgba(245,158,11,0.15); color: #fcd34d; border: 1px solid rgba(245,158,11,0.25); }
+    .badge-red { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.25); }
+
+    /* ── Table ── */
+    .table-wrap { overflow-x: auto; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    thead tr { background: rgba(59,130,246,0.08); }
+    th { padding: 0.7rem 1rem; text-align: left; font-weight: 600; color: var(--txt); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    td { padding: 0.65rem 1rem; color: var(--txt2); border-bottom: 1px solid var(--border); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tbody tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* ── FAQ accordion ── */
+    details {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 0.5rem;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+    details[open] { border-color: rgba(59,130,246,0.35); }
+    summary {
+      padding: 1rem 1.25rem;
+      cursor: pointer;
+      font-weight: 500;
+      color: var(--txt);
+      font-size: 0.925rem;
+      list-style: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.5rem;
+      user-select: none;
+      background: rgba(255,255,255,0.025);
+      transition: background 0.15s;
+    }
+    summary:hover { background: rgba(255,255,255,0.045); }
+    summary::after { content: '+'; font-size: 1.2rem; color: var(--txt3); flex-shrink: 0; transition: transform 0.2s; }
+    details[open] summary::after { content: '−'; color: var(--accent); }
+    details[open] summary { background: rgba(59,130,246,0.06); }
+    .faq-body { padding: 0 1.25rem 1rem; color: var(--txt2); font-size: 0.9rem; }
+    .faq-body p:first-child { padding-top: 0.75rem; }
+
+    /* ── Alert box ── */
+    .alert {
+      display: flex;
+      gap: 0.75rem;
+      padding: 0.9rem 1.1rem;
+      border-radius: 10px;
+      margin-bottom: 1rem;
+      font-size: 0.875rem;
+      color: var(--txt2);
+    }
+    .alert-icon { flex-shrink: 0; font-size: 1.1rem; }
+    .alert-info { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.22); }
+    .alert-warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.22); }
+    .alert-tip  { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.22); }
+    .alert-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.22); }
+
+    /* ── Model pill row ── */
+    .model-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 0.8rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .model-row:last-child { border-bottom: none; }
+    .model-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 0.45rem;
+    }
+    .model-info { flex: 1; }
+    .model-name { font-weight: 600; color: var(--txt); font-size: 0.9rem; }
+    .model-desc { font-size: 0.82rem; color: var(--txt2); margin-top: 0.15rem; }
+    .model-badges { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-top: 0.4rem; }
+
+    /* ── Topbar (mobile) ── */
+    .topbar {
+      display: none;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,12,20,0.95);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      padding: 0.875rem 1.25rem;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .topbar-logo img { height: 24px; }
+    .menu-toggle {
+      background: none;
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      color: var(--txt);
+      padding: 0.4rem 0.6rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    /* ── Mobile overlay ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 150;
+    }
+    .sidebar-overlay.visible { display: block; }
+
+    /* ── Right rail (TOC on very wide screens) ── */
+    @media (min-width: 1280px) {
+      .content { max-width: 800px; padding-right: 3rem; }
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 768px) {
+      .topbar { display: flex; }
+      .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 200;
+        transform: translateX(-100%);
+        transition: transform 0.26s cubic-bezier(0.2,0,0.2,1);
+      }
+      .sidebar.open { transform: translateX(0); }
+      .content { padding: 1.5rem 1.25rem; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .page-hero h1 { font-size: 1.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Mobile topbar -->
+<div class="topbar" id="topbar">
+  <a class="topbar-logo" href="#"><img src="/LinkDok-logo.svg" alt="LinkDok" /></a>
+  <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Open menu">☰ Menu</button>
+</div>
+<div class="sidebar-overlay" id="overlay" onclick="closeSidebar()"></div>
+
+<div class="layout">
+  <!-- ══════════ SIDEBAR ══════════ -->
+  <nav class="sidebar" id="sidebar">
+    <a href="#" class="sidebar-logo">
+      <img src="/LinkDok-logo.svg" alt="LinkDok" />
+      <span class="sidebar-logo-tag">Docs</span>
+    </a>
+
+    <span class="sidebar-section-label">Getting Started</span>
+    <div class="sidebar-nav">
+      <a href="#what-is-linkdok"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>What is LinkDok?</a>
+      <a href="#how-it-works"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>How It Works</a>
+      <a href="#beginner-guide"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Beginner's Guide</a>
+    </div>
+
+    <span class="sidebar-section-label">Features</span>
+    <div class="sidebar-nav">
+      <a href="#use-cases"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Use Cases</a>
+      <a href="#ai-models"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2z"/></svg>AI Models</a>
+      <a href="#ai-playground"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>AI Playground</a>
+      <a href="#best-practices"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>Best Practices</a>
+    </div>
+
+    <span class="sidebar-section-label">Troubleshooting</span>
+    <div class="sidebar-nav">
+      <a href="#errors"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Errors & Solutions</a>
+      <a href="#rate-limits"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>Rate Limits</a>
+      <a href="#faq"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>FAQ</a>
+    </div>
+
+    <span class="sidebar-section-label">Legal</span>
+    <div class="sidebar-nav">
+      <a href="#privacy"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>Privacy Policy</a>
+      <a href="#legal"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Terms & Legal</a>
+      <a href="#copyright"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M14.83 14.83A4 4 0 1 1 9.17 9.17"/></svg>Copyright</a>
+    </div>
+
+    <span class="sidebar-section-label">About</span>
+    <div class="sidebar-nav">
+      <a href="#about"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>About Developer</a>
+      <a href="#changelog"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Changelog</a>
+    </div>
+
+    <div class="sidebar-footer">
+      <a href="/" onclick="window.close ? window.history.back() : null">← Back to LinkDok</a>
+    </div>
+  </nav>
+
+  <!-- ══════════ MAIN CONTENT ══════════ -->
+  <main class="content">
+
+    <!-- ── Hero ── -->
+    <div class="page-hero">
+      <div class="page-hero-eyebrow">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+        Help &amp; Documentation
+      </div>
+      <h1>Everything you need to know about LinkDok</h1>
+      <p>Your complete guide to saving, organizing, and understanding links — powered by AI. Read top to bottom or jump to any section.</p>
+    </div>
+
+    <!-- ════════════════════════════════
+         WHAT IS LINKDOK
+    ════════════════════════════════ -->
+    <section id="what-is-linkdok">
+      <h2><span class="h2-icon">🔗</span> What is LinkDok?</h2>
+      <p><strong>LinkDok</strong> is a smart bookmark manager that goes far beyond saving URLs. It lets you organize your links into categories, automatically extract and understand their content, and then chat with an AI that has actually read those pages — so it can answer questions, explain concepts, and tutor you on anything you've saved.</p>
+
+      <div class="grid-2">
+        <div class="card card-accent">
+          <h3 style="margin-top:0">📁 Save &amp; Organize</h3>
+          <p>Create categories and add any URL. LinkDok will auto-fetch the title, favicon, and description.</p>
+        </div>
+        <div class="card card-green">
+          <h3 style="margin-top:0">🤖 AI That Reads Your Links</h3>
+          <p>Select a category and ask questions. The AI reads the actual page content before answering.</p>
+        </div>
+        <div class="card card-purple">
+          <h3 style="margin-top:0">🧠 Multiple AI Models</h3>
+          <p>Choose from 8 powerful AI models: from ultra-fast to deep reasoning, all via NVIDIA NIM.</p>
+        </div>
+        <div class="card card-yellow">
+          <h3 style="margin-top:0">💬 AI Playground</h3>
+          <p>Free chat mode — chat with any model without needing saved links. Like ChatGPT, but from LinkDok.</p>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         HOW IT WORKS
+    ════════════════════════════════ -->
+    <section id="how-it-works">
+      <h2><span class="h2-icon">⚙️</span> How It Works</h2>
+      <p>LinkDok uses a multi-step pipeline whenever you ask a question inside a category:</p>
+
+      <ol class="steps">
+        <li><div><strong>You save links into a category.</strong> Any URL works — articles, docs, research papers, YouTube videos, blog posts. LinkDok stores the URL, title, and description.</div></li>
+        <li><div><strong>You open the chat for that category.</strong> LinkDok automatically fetches the real content of each link (the text, not just metadata). This step happens once when the chat loads.</div></li>
+        <li><div><strong>You type a question.</strong> The AI receives your question plus the extracted content of all links as context. It has actually read the pages.</div></li>
+        <li><div><strong>The AI streams an answer.</strong> Response typewrites in real-time. You can see if the model is "thinking" (for reasoning models), then the answer fills in progressively.</div></li>
+        <li><div><strong>You continue the conversation.</strong> Follow-up questions remember the entire conversation history, so context builds up naturally.</div></li>
+      </ol>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>Content extraction uses <strong>Diffbot</strong> (when a key is configured) or a direct fetch + text parsing fallback. Some sites block automated access; if content can't be fetched, the AI will say so honestly.</div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         BEGINNER'S GUIDE
+    ════════════════════════════════ -->
+    <section id="beginner-guide">
+      <h2><span class="h2-icon">📖</span> Beginner's Guide</h2>
+      <p>Never used LinkDok before? Here's everything you need in 5 minutes.</p>
+
+      <h3>Step 1 — Add your first category</h3>
+      <p>Click the <code>+ Add Category</code> button (or the <code>+</code> icon in the header). Give it a meaningful name like <em>"React Tutorials"</em> or <em>"Interview Prep"</em>. Think of categories as folders for related links.</p>
+
+      <h3>Step 2 — Add links to the category</h3>
+      <p>Click <strong>Add Link</strong> inside any category. Paste a URL and hit Enter. LinkDok will fetch the title and description automatically. Add as many links as you like.</p>
+
+      <h3>Step 3 — Start the AI Chat</h3>
+      <p>Click the chat bubble icon <code>💬</code> next to a category name to enter the AI chat for that category. The AI loads content from all your saved links.</p>
+
+      <h3>Step 4 — Ask anything</h3>
+      <p>Type a question like <em>"What are the main hooks in React?"</em> or <em>"Summarize all these resources"</em> or <em>"Quiz me on this topic"</em>. The AI uses your saved links as its knowledge source.</p>
+
+      <h3>Step 5 — Try the AI Playground</h3>
+      <p>Click the <strong>Try [Model]</strong> animated button in the left sidebar to access the free AI Playground. No links required — chat freely with any model for general questions, coding, writing, math, etc.</p>
+
+      <div class="alert alert-tip">
+        <span class="alert-icon">✅</span>
+        <div><strong>Pro tip:</strong> Add 3–6 links per category for best results. Too many links can slow down content extraction; too few may not give the AI enough context.</div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         USE CASES
+    ════════════════════════════════ -->
+    <section id="use-cases">
+      <h2><span class="h2-icon">🎯</span> Use Cases</h2>
+      <p>Here are real-world ways people use LinkDok:</p>
+
+      <div class="card" style="margin-bottom:0.75rem">
+        <h3 style="margin-top:0">🎓 Students</h3>
+        <ul>
+          <li>Save all reference articles for a specific subject into one category</li>
+          <li>Ask the AI to <em>"Create a study guide from these links"</em></li>
+          <li>Ask it to generate quiz questions before an exam</li>
+          <li>Request simple explanations of complex topics in saved research papers</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-bottom:0.75rem">
+        <h3 style="margin-top:0">👨‍💻 Developers</h3>
+        <ul>
+          <li>Save documentation pages and ask <em>"How do I implement X using this API?"</em></li>
+          <li>Store Stack Overflow threads and GitHub Issues, then ask for synthesized solutions</li>
+          <li>Use the Playground with <strong>Devstral</strong> for code generation and debugging</li>
+          <li>Save blog posts about architecture patterns and discuss trade-offs with the AI</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-bottom:0.75rem">
+        <h3 style="margin-top:0">📰 Researchers</h3>
+        <ul>
+          <li>Organize research papers by category (e.g., "LLM Papers", "CV Papers")</li>
+          <li>Ask the AI to <em>"Compare the methodologies across these papers"</em></li>
+          <li>Request a literature review summary</li>
+          <li>Ask it to identify the key findings and open questions</li>
+        </ul>
+      </div>
+      <div class="card" style="margin-bottom:0.75rem">
+        <h3 style="margin-top:0">💼 Professionals</h3>
+        <ul>
+          <li>Save industry reports and news articles, ask for key takeaways</li>
+          <li>Organize competitor analysis links and chat about strategy</li>
+          <li>Save onboarding docs and use the AI as a knowledge base assistant</li>
+          <li>Collect interview prep resources and request mock questions</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">✍️ Writers &amp; Creators</h3>
+        <ul>
+          <li>Save reference articles, ask the AI to help draft content based on them</li>
+          <li>Use <strong>Mistral Large</strong> (great for writing) in the Playground for creative work</li>
+          <li>Organize inspiration links by theme</li>
+        </ul>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         AI MODELS
+    ════════════════════════════════ -->
+    <section id="ai-models">
+      <h2><span class="h2-icon">🧠</span> AI Models</h2>
+      <p>LinkDok provides access to 8 specialized AI models via <strong>NVIDIA NIM</strong>. Each has different strengths. You can switch models at any time using the dropdown in the chat header.</p>
+
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="model-row">
+          <div class="model-dot" style="background:#a78bfa"></div>
+          <div class="model-info">
+            <div class="model-name">Auto (Smart Routing)</div>
+            <div class="model-desc">LinkDok's default. Automatically picks the best model based on your question type — coding, writing, reasoning, general knowledge.</div>
+            <div class="model-badges"><span class="badge badge-purple">✦ Thinking</span><span class="badge badge-blue">Recommended</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#3b82f6"></div>
+          <div class="model-info">
+            <div class="model-name">Kimi K2.5</div>
+            <div class="model-desc">Moonshot AI's flagship model. Exceptional at deep reasoning, mathematics, and multi-step problem solving. Best for hard questions.</div>
+            <div class="model-badges"><span class="badge badge-purple">✦ Thinking</span><span class="badge badge-yellow">180s timeout</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#10b981"></div>
+          <div class="model-info">
+            <div class="model-name">Step Flash</div>
+            <div class="model-desc">Ultra-fast responses (typically 3–8s). Great for quick questions, simple explanations, and when you need speed over depth.</div>
+            <div class="model-badges"><span class="badge badge-green">Fastest</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#f97316"></div>
+          <div class="model-info">
+            <div class="model-name">Devstral</div>
+            <div class="model-desc">Mistral AI's code-specialized model. Best for programming tasks, debugging, code review, and technical explanations.</div>
+            <div class="model-badges"><span class="badge badge-blue">Code Expert</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#8b5cf6"></div>
+          <div class="model-info">
+            <div class="model-name">DeepSeek V3.2</div>
+            <div class="model-desc">DeepSeek's powerful research model. Excellent at research synthesis, detailed analysis, and long-form content understanding.</div>
+            <div class="model-badges"><span class="badge badge-purple">✦ Thinking</span><span class="badge badge-blue">Research</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#f59e0b"></div>
+          <div class="model-info">
+            <div class="model-name">Mistral Large</div>
+            <div class="model-desc">Mistral AI's premier model. Excellent for writing, summarization, long-form content, creative tasks, and nuanced answers.</div>
+            <div class="model-badges"><span class="badge badge-yellow">Writing</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#ec4899"></div>
+          <div class="model-info">
+            <div class="model-name">Qwen 3.5</div>
+            <div class="model-desc">Alibaba's versatile model. Powerful all-rounder with strong multilingual support and reasoning capabilities.</div>
+            <div class="model-badges"><span class="badge badge-purple">✦ Thinking</span><span class="badge badge-green">Multilingual</span></div>
+          </div>
+        </div>
+        <div class="model-row">
+          <div class="model-dot" style="background:#06b6d4"></div>
+          <div class="model-info">
+            <div class="model-name">GLM5</div>
+            <div class="model-desc">Zhipu AI's general purpose model. Balanced performance across a wide range of tasks.</div>
+            <div class="model-badges"><span class="badge badge-purple">✦ Thinking</span></div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Thinking Mode</h3>
+      <p>Models marked with <span class="badge badge-purple">✦ Thinking</span> support an extended reasoning phase — the model thinks through the problem step by step before answering. This is visible as a live "thinking bubble" during generation.</p>
+      <p>Thinking mode has three states, toggled via the pill button inside the model dropdown:</p>
+      <ul>
+        <li><strong>Auto</strong> — LinkDok decides based on question complexity (default)</li>
+        <li><strong>On</strong> — Always use thinking (better accuracy, slower)</li>
+        <li><strong>Off</strong> — Skip thinking (faster, good for simple questions)</li>
+      </ul>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         AI PLAYGROUND
+    ════════════════════════════════ -->
+    <section id="ai-playground">
+      <h2><span class="h2-icon">💬</span> AI Playground</h2>
+      <p>The AI Playground is LinkDok's <strong>free chat mode</strong> — like having a personal ChatGPT right inside your workspace. No links required.</p>
+
+      <h3>How to open the Playground</h3>
+      <p>Click the animated <strong>"Try [Model]"</strong> button in the left sidebar. A new chat session is created instantly.</p>
+
+      <h3>What you can do</h3>
+      <ul>
+        <li>Ask general knowledge questions on any topic</li>
+        <li>Get coding help — write, debug, explain code</li>
+        <li>Creative writing: stories, emails, scripts</li>
+        <li>Math and logic problems (use Kimi K2.5 or DeepSeek V3.2)</li>
+        <li>Translations and language help (Qwen 3.5 is great for this)</li>
+        <li>Brainstorm ideas, get advice, debate topics</li>
+      </ul>
+
+      <h3>Managing sessions</h3>
+      <p>Each playground chat is saved as a session in the left sidebar under <strong>AI CHATS</strong>. Sessions are auto-titled from your first message. You can:</p>
+      <ul>
+        <li>Switch between sessions by clicking them</li>
+        <li>Delete a session using the trash icon on hover</li>
+        <li>Sessions persist in your browser (localStorage)</li>
+      </ul>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>Playground sessions are stored locally in your browser. Clearing browser data will erase them. There is no cloud sync yet.</div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         BEST PRACTICES
+    ════════════════════════════════ -->
+    <section id="best-practices">
+      <h2><span class="h2-icon">⭐</span> How to Get the Best of LinkDok</h2>
+
+      <h3>Organize your categories thoughtfully</h3>
+      <p>Create focused, topic-specific categories rather than dumping all links into one place. <em>"Python Async Docs"</em> is better than <em>"Programming"</em>. Narrower context = better AI answers.</p>
+
+      <h3>Save quality sources</h3>
+      <p>Official documentation, authoritative articles, and structured content extract much better than paywalled sites, heavy JavaScript SPAs, or PDFs. When a link fails to extract, try an alternative source.</p>
+
+      <h3>Use descriptive questions</h3>
+      <div class="grid-2">
+        <div class="card card-red">
+          <p style="font-size:0.85rem"><strong>❌ Vague</strong><br/>
+          <em>"Explain this"</em><br/>
+          <em>"What is it?"</em><br/>
+          <em>"Help me"</em></p>
+        </div>
+        <div class="card card-green">
+          <p style="font-size:0.85rem"><strong>✅ Specific</strong><br/>
+          <em>"Explain the event loop from these Node.js docs"</em><br/>
+          <em>"Summarize the key findings across these papers"</em><br/>
+          <em>"Give me 5 quiz questions on React hooks"</em></p>
+        </div>
+      </div>
+
+      <h3>Pick the right model for the job</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Task</th><th>Best model</th></tr></thead>
+          <tbody>
+            <tr><td>Quick summary or definition</td><td><span class="badge badge-green">Step Flash</span></td></tr>
+            <tr><td>Deep analysis / research</td><td><span class="badge badge-purple">Kimi K2.5 · DeepSeek V3.2</span></td></tr>
+            <tr><td>Code writing / debugging</td><td><span class="badge badge-blue">Devstral · Auto</span></td></tr>
+            <tr><td>Creative writing</td><td><span class="badge badge-yellow">Mistral Large</span></td></tr>
+            <tr><td>General questions</td><td><span class="badge badge-blue">Auto</span></td></tr>
+            <tr><td>Multilingual / non-English</td><td><span class="badge badge-green">Qwen 3.5</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Use conversation history</h3>
+      <p>Don't start a new chat for every follow-up. Continue the same conversation — the AI remembers what was discussed and can refine, expand, or correct its previous answers.</p>
+
+      <h3>Use Thinking mode for hard problems</h3>
+      <p>For math, logic puzzles, complex coding, or multi-step reasoning — set Thinking to <strong>On</strong> for the best accuracy. For casual questions, leave it on <strong>Auto</strong> or <strong>Off</strong> for speed.</p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         ERRORS & SOLUTIONS
+    ════════════════════════════════ -->
+    <section id="errors">
+      <h2><span class="h2-icon">⚠️</span> Errors &amp; Solutions</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Error</th><th>Cause</th><th>Fix</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><code>The model took too long to respond</code></td>
+              <td>Reasoning models (Kimi K2.5, DeepSeek) can take 60–120s on complex questions</td>
+              <td>Try a shorter question, turn Thinking <strong>Off</strong>, or switch to Step Flash</td>
+            </tr>
+            <tr>
+              <td><code>Rate limit reached</code></td>
+              <td>You've sent 6+ messages in 60 seconds</td>
+              <td>Wait 60 seconds, then resume. Limits reset automatically.</td>
+            </tr>
+            <tr>
+              <td><code>Could not extract content from link</code></td>
+              <td>Site blocks bots, requires login, or is a JS-heavy SPA</td>
+              <td>Try a different source for the same topic. Wikipedia, MDN, and official docs extract reliably.</td>
+            </tr>
+            <tr>
+              <td><code>Failed to fetch</code></td>
+              <td>Network error or the API server is temporarily down</td>
+              <td>Check your internet connection. Try again in 30 seconds.</td>
+            </tr>
+            <tr>
+              <td>AI gives wrong or hallucinated info</td>
+              <td>Links didn't extract correctly, or model uncertainty</td>
+              <td>Check if extracted content looks right. Try a reasoning model with Thinking On. Always verify important facts.</td>
+            </tr>
+            <tr>
+              <td>Chat history disappears on page reload</td>
+              <td>Messages are stored in memory only (not persisted yet)</td>
+              <td>Export important conversations manually. Persistence is on the roadmap.</td>
+            </tr>
+            <tr>
+              <td>Stars / thinking bubble shows but no answer comes</td>
+              <td>Model is still in the reasoning phase (can take 30–90s)</td>
+              <td>Wait patiently — the thinking bubble shows the model is actively working. The answer appears after reasoning completes.</td>
+            </tr>
+            <tr>
+              <td>Dropdown cut off on mobile</td>
+              <td>Fixed in the latest version</td>
+              <td>Hard refresh the page (<code>Ctrl+Shift+R</code> / <code>Cmd+Shift+R</code>)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="alert alert-warn">
+        <span class="alert-icon">⚠️</span>
+        <div>If you encounter a persistent error not listed here, try a hard refresh first. Most transient issues resolve automatically.</div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         RATE LIMITS
+    ════════════════════════════════ -->
+    <section id="rate-limits">
+      <h2><span class="h2-icon">📊</span> Rate Limits Explained</h2>
+      <p>LinkDok enforces rate limits to ensure fair usage and keep the service running smoothly for all users. There are two levels:</p>
+
+      <div class="grid-2">
+        <div class="card card-yellow">
+          <h3 style="margin-top:0">Client-side Soft Limit</h3>
+          <p><strong>6 messages per 60 seconds</strong> per browser session.</p>
+          <p style="font-size:0.85rem">If exceeded, you'll see a yellow banner and must wait. The counter resets every 60 seconds automatically.</p>
+        </div>
+        <div class="card card-red">
+          <h3 style="margin-top:0">Server-side Hard Limit</h3>
+          <p><strong>10 requests per 60 seconds</strong> per IP address.</p>
+          <p style="font-size:0.85rem">Applied to all API calls including content extraction. Returns HTTP 429 with a Retry-After header.</p>
+        </div>
+      </div>
+
+      <h3>Why are there rate limits?</h3>
+      <ul>
+        <li>Each AI request consumes NVIDIA NIM API credits</li>
+        <li>Content extraction (Diffbot) has its own usage limits</li>
+        <li>Rate limits prevent abuse and ensure the service stays free and accessible</li>
+        <li>Reasoning models (Kimi K2.5, DeepSeek) use significantly more compute per request</li>
+      </ul>
+
+      <h3>Tips to stay within limits</h3>
+      <ul>
+        <li>Ask one well-crafted question instead of many small follow-ups</li>
+        <li>Use conversation history — the AI remembers context, so you don't need to re-ask</li>
+        <li>Avoid rapid-fire testing in the Playground</li>
+        <li>Step Flash uses fewer resources and rarely hits limits</li>
+      </ul>
+
+      <div class="alert alert-info">
+        <span class="alert-icon">ℹ️</span>
+        <div>Rate limits are per-session (client) or per-IP (server). If you're on a shared network (school, office), the server limit is shared with others on the same IP.</div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         FAQ
+    ════════════════════════════════ -->
+    <section id="faq">
+      <h2><span class="h2-icon">❓</span> Frequently Asked Questions</h2>
+
+      <details>
+        <summary>Is LinkDok free to use?</summary>
+        <div class="faq-body"><p>Yes. LinkDok is currently free. The underlying AI models are powered by NVIDIA NIM API and there is a rate limit in place to ensure fair usage. There is no subscription or payment required.</p></div>
+      </details>
+
+      <details>
+        <summary>Do my links and conversations get stored on a server?</summary>
+        <div class="faq-body"><p>No. All your categories, links, and chat history are stored entirely in your browser's <strong>localStorage</strong>. Nothing is sent to or stored on any LinkDok server. Your data stays on your device.</p><p>The only data that travels to a server is your message and the extracted content of your links — which is sent to the NVIDIA NIM API to generate the AI response, and then discarded.</p></div>
+      </details>
+
+      <details>
+        <summary>Why does the AI sometimes give wrong answers?</summary>
+        <div class="faq-body"><p>AI models can hallucinate — they may generate plausible-sounding but incorrect information, especially when the source content didn't extract properly or when asked about something outside the saved links. Always verify important facts from authoritative sources. Using reasoning models (Kimi K2.5, DeepSeek) with Thinking On reduces hallucinations significantly.</p></div>
+      </details>
+
+      <details>
+        <summary>Can I save YouTube videos or social media posts?</summary>
+        <div class="faq-body"><p>You can save the URL and the title/thumbnail will be fetched. However, full content extraction from YouTube, Twitter/X, Instagram, and similar platforms is limited or unavailable due to their bot-protection. The AI will still try to answer based on whatever content is accessible, but results will be limited.</p></div>
+      </details>
+
+      <details>
+        <summary>How many links can I save per category?</summary>
+        <div class="faq-body"><p>There is no hard limit on the number of links. However, for AI chat performance, we recommend <strong>3–8 links per category</strong>. Loading too many links increases the content extraction time and may push the AI response over context limits. For very large collections, consider splitting into sub-categories.</p></div>
+      </details>
+
+      <details>
+        <summary>Can I use LinkDok on mobile?</summary>
+        <div class="faq-body"><p>LinkDok is primarily designed for desktop use. A mobile blocker is shown on very small screens. However, tablets (≥768px) and landscape phones work reasonably well with the responsive layout.</p></div>
+      </details>
+
+      <details>
+        <summary>What happens if I clear my browser data?</summary>
+        <div class="faq-body"><p>Since all data is in localStorage, clearing browser data (cookies &amp; storage) will erase all your categories, links, and Playground sessions. There is no backup or sync currently. Export important data manually before clearing browser storage.</p></div>
+      </details>
+
+      <details>
+        <summary>Why does the AI say it "doesn't have access" to some pages?</summary>
+        <div class="faq-body"><p>Some websites block automated content extraction (e.g., paywalled sites, sites requiring login, aggressively JavaScript-rendered single-page apps). In these cases, the AI will note that the content wasn't accessible and answer from general knowledge instead.</p></div>
+      </details>
+
+      <details>
+        <summary>Can I export or import my links?</summary>
+        <div class="faq-body"><p>Export/Import is on the development roadmap. Currently, your data lives only in your browser's localStorage. You can inspect it manually via browser DevTools → Application → Local Storage.</p></div>
+      </details>
+
+      <details>
+        <summary>Is this a PWA / can I install it?</summary>
+        <div class="faq-body"><p>Not yet. A Progressive Web App (PWA) version is being considered for future development.</p></div>
+      </details>
+
+      <details>
+        <summary>Which browser works best?</summary>
+        <div class="faq-body"><p>LinkDok works on all modern browsers. <strong>Chrome</strong> and <strong>Edge</strong> are recommended for best performance. Firefox and Safari are supported. Avoid Internet Explorer — it is not supported.</p></div>
+      </details>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         PRIVACY POLICY
+    ════════════════════════════════ -->
+    <section id="privacy">
+      <h2><span class="h2-icon">🛡️</span> Privacy Policy</h2>
+      <p><em>Last updated: February 2026</em></p>
+
+      <h3>What data we collect</h3>
+      <p>LinkDok collects <strong>minimal data</strong>:</p>
+      <ul>
+        <li><strong>No account registration</strong> — no name, email, or password is ever required</li>
+        <li><strong>No analytics</strong> — we do not use Google Analytics, Mixpanel, or any tracking</li>
+        <li><strong>No cookies</strong> — we do not set any tracking or session cookies</li>
+        <li><strong>No server-side storage</strong> — your links, categories, and chat history are stored in your browser only</li>
+      </ul>
+
+      <h3>What is sent to third parties</h3>
+      <ul>
+        <li><strong>AI messages</strong> — your chat messages and extracted link content are sent to <strong>NVIDIA NIM API</strong> to generate responses. Refer to NVIDIA's privacy policy for their data handling.</li>
+        <li><strong>Content extraction</strong> — URLs are sent to <strong>Diffbot</strong> (if configured) for content extraction. Refer to Diffbot's privacy policy.</li>
+        <li><strong>IP Address</strong> — your IP address is visible to our serverless API functions (Vercel) for rate limiting purposes only. It is not logged or stored.</li>
+      </ul>
+
+      <h3>Local storage</h3>
+      <p>All user data (categories, links, Playground sessions) is stored in <code>localStorage</code> in your browser. It is never transmitted to LinkDok servers. You can delete it at any time by clearing site data in your browser settings.</p>
+
+      <h3>Children's privacy</h3>
+      <p>LinkDok is not directed at children under 13. If you are under 13, please do not use this service.</p>
+
+      <h3>Changes to this policy</h3>
+      <p>This policy may be updated occasionally. Changes will be reflected on this page with an updated date.</p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         LEGAL / TERMS
+    ════════════════════════════════ -->
+    <section id="legal">
+      <h2><span class="h2-icon">📄</span> Terms of Use &amp; Legal</h2>
+      <p><em>Last updated: February 2026</em></p>
+
+      <h3>Acceptance of Terms</h3>
+      <p>By using LinkDok, you agree to these terms. If you do not agree, please discontinue use.</p>
+
+      <h3>Permitted Use</h3>
+      <ul>
+        <li>LinkDok is provided for personal, educational, and non-commercial use</li>
+        <li>You may use it to organize your own saved links and research</li>
+        <li>You may use the AI features to learn, research, and assist with lawful tasks</li>
+      </ul>
+
+      <h3>Prohibited Use</h3>
+      <ul>
+        <li>Do not use LinkDok to generate harmful, hateful, illegal, or abusive content</li>
+        <li>Do not attempt to abuse rate limits via automated scraping or bots</li>
+        <li>Do not use LinkDok for any purpose that violates applicable law</li>
+        <li>Do not attempt to reverse-engineer LinkDok's API or circumvent security measures</li>
+      </ul>
+
+      <h3>Disclaimer of Warranties</h3>
+      <p>LinkDok is provided <strong>"as is"</strong> without any warranties. AI-generated responses may be inaccurate — do not rely on them for medical, legal, financial, or safety-critical decisions. Verify all important information.</p>
+
+      <h3>Limitation of Liability</h3>
+      <p>The developer of LinkDok is not liable for any direct, indirect, incidental, or consequential damages arising from use of the service, including but not limited to loss of data, inaccurate AI responses, or service unavailability.</p>
+
+      <h3>Third-Party Services</h3>
+      <p>LinkDok integrates with NVIDIA NIM, Diffbot, and is hosted on Vercel. Each of these services has its own terms and privacy policies. Usage of LinkDok implies acceptance of those terms as well.</p>
+
+      <h3>Governing Law</h3>
+      <p>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in India.</p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         COPYRIGHT
+    ════════════════════════════════ -->
+    <section id="copyright">
+      <h2><span class="h2-icon">©️</span> Copyright</h2>
+
+      <div class="card card-accent">
+        <p style="font-size:0.95rem; margin:0">Copyright © 2024–2026 <strong>LinkDok</strong>. All rights reserved.</p>
+      </div>
+
+      <h3>LinkDok Brand Assets</h3>
+      <p>The LinkDok name, logo, and visual identity are proprietary and may not be used, copied, or distributed without explicit written permission from the developer.</p>
+
+      <h3>Open Source Components</h3>
+      <p>LinkDok is built on open source software. Key dependencies include:</p>
+      <ul>
+        <li><strong>React</strong> — MIT License (Meta)</li>
+        <li><strong>Vite</strong> — MIT License</li>
+        <li><strong>ReactMarkdown / remark-gfm</strong> — MIT License</li>
+        <li><strong>Lucide React</strong> — ISC License</li>
+        <li><strong>Inter font</strong> — SIL Open Font License</li>
+      </ul>
+
+      <h3>AI Models</h3>
+      <p>AI model outputs are generated by models provided by NVIDIA NIM (Kimi K2.5 by Moonshot AI, Devstral by Mistral AI, DeepSeek V3.2 by DeepSeek, etc.). These outputs are subject to each model provider's terms of use.</p>
+
+      <h3>Content You Save</h3>
+      <p>You retain all rights to the URLs and content you save. LinkDok does not claim any ownership over your saved links or your chat conversations.</p>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         ABOUT DEVELOPER
+    ════════════════════════════════ -->
+    <section id="about">
+      <h2><span class="h2-icon">👨‍💻</span> About the Developer</h2>
+
+      <div class="card card-purple">
+        <h3 style="margin-top:0">LinkDok — Built with purpose</h3>
+        <p>LinkDok was built by a solo developer passionate about making AI genuinely useful for everyday research, learning, and knowledge management. The goal: make your saved links actually talk back.</p>
+        <p>The idea came from frustration with the classic bookmarking problem — saving hundreds of articles and never being able to find or use them effectively. LinkDok solves this by letting you <em>chat with your bookmarks</em>.</p>
+      </div>
+
+      <h3>Tech Stack</h3>
+      <ul>
+        <li><strong>Frontend:</strong> React 18 + Vite, responsive UI, dark/light mode</li>
+        <li><strong>AI Backend:</strong> NVIDIA NIM API — access to cutting-edge models</li>
+        <li><strong>Content Extraction:</strong> Diffbot API + custom fallback parser</li>
+        <li><strong>Hosting:</strong> Vercel (serverless functions, global CDN)</li>
+        <li><strong>Storage:</strong> Browser localStorage — zero backend database</li>
+      </ul>
+
+      <h3>Philosophy</h3>
+      <ul>
+        <li><strong>Privacy-first:</strong> No accounts, no tracking, no server-side data storage</li>
+        <li><strong>Open AI access:</strong> Multiple powerful models without choosing sides</li>
+        <li><strong>Local-first:</strong> Your data stays in your browser</li>
+        <li><strong>Honest AI:</strong> The AI tells you when it can't extract content or isn't confident</li>
+      </ul>
+
+      <h3>Future Roadmap</h3>
+      <ul>
+        <li>📤 Export / Import of categories and links (JSON backup)</li>
+        <li>🌐 Optional cross-device sync (cloud backup)</li>
+        <li>📎 Browser extension for one-click saving</li>
+        <li>📱 Progressive Web App (PWA) support</li>
+        <li>🔍 Search across all saved links and chat history</li>
+        <li>🏷️ Tags and advanced filtering</li>
+        <li>📄 PDF upload support directly in chat</li>
+      </ul>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- ════════════════════════════════
+         CHANGELOG
+    ════════════════════════════════ -->
+    <section id="changelog">
+      <h2><span class="h2-icon">📋</span> Changelog</h2>
+
+      <div class="card" style="margin-bottom:0.75rem">
+        <h3 style="margin-top:0">v2.0 — February 2026 <span class="badge badge-green" style="vertical-align:middle">Latest</span></h3>
+        <ul>
+          <li>AI Playground (free chat mode) with session management</li>
+          <li>8 AI models via NVIDIA NIM with per-model thinking mode toggle</li>
+          <li>Live thinking bubble during model reasoning phase</li>
+          <li>Smart scroll — no forced scroll during streaming</li>
+          <li>Vercel timeout increase to 300s for reasoning models</li>
+          <li>Mobile UI fixes: horizontal scroll eliminated, dropdown fixed</li>
+          <li>Rate limiting (client 6/60s + server 10/60s)</li>
+          <li>Intro landing page with animated cards</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="margin-top:0">v1.0 — 2024</h3>
+        <ul>
+          <li>Initial release: save links, organize into categories</li>
+          <li>Basic AI chat using saved link content</li>
+          <li>Dark/light mode</li>
+          <li>Link metadata auto-fetch (title, favicon, description)</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Bottom spacer -->
+    <div style="height: 4rem"></div>
+
+    <!-- Footer -->
+    <footer style="border-top: 1px solid var(--border); padding-top: 1.5rem; color: var(--txt3); font-size: 0.8rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+      <span>© 2024–2026 LinkDok. All rights reserved.</span>
+      <a href="/" style="color: var(--accent); text-decoration: none;">← Back to LinkDok</a>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  // Sidebar toggle (mobile)
+  function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('overlay').classList.toggle('visible');
+  }
+  function closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('overlay').classList.remove('visible');
+  }
+
+  // Active link highlighting on scroll
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.sidebar-nav a');
+
+  function setActiveLink() {
+    let current = '';
+    sections.forEach(sec => {
+      if (window.scrollY + 120 >= sec.offsetTop) current = sec.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === '#' + current);
+    });
+  }
+
+  window.addEventListener('scroll', setActiveLink, { passive: true });
+  setActiveLink();
+
+  // Close sidebar on nav click (mobile)
+  navLinks.forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 768) closeSidebar();
+    });
+  });
+</script>
+</body>
+</html>

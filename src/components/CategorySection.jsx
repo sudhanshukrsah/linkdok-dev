@@ -57,7 +57,9 @@ function CategorySection({ category, onDeleteCategory, onDeleteLink, onEditLink,
         <div className="category-actions">
           <div className="chat-action-container">
             {category.links.length > 0 && (
-              <span className="chat-hint">{chatHints[chatHintIndex]}</span>
+              <span key={chatHintIndex} className="chat-hint">
+                {chatHints[chatHintIndex]}
+              </span>
             )}
             <button
               className="btn btn-secondary btn-icon chat-btn"

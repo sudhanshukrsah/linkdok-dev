@@ -1,12 +1,13 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { Plus, Search, Moon, Sun, ChevronDown, FolderPlus, LinkIcon, HelpCircle } from 'lucide-react';
+import { Plus, Search, Moon, Sun, ChevronDown, FolderPlus, LinkIcon, HelpCircle, Menu } from 'lucide-react';
 import CategorySection from './components/CategorySection';
 import AddLinkModal from './components/AddLinkModal';
+import CustomSelect from './components/CustomSelect';
 import AddCategoryModal from './components/AddCategoryModal';
 import ChatHistory from './components/ChatHistory';
 import ChatPage from './components/ChatPage';
-import IntroVideo from './components/IntroVideo';
-import MobileBlocker from './components/MobileBlocker';
+import IntroLanding from './components/IntroLanding';
+
 import { extractContentFromURL } from './utils/contentExtractor';
 import { prepareSearchData, createSearchEngine, performSearch, debounce } from './utils/searchEngine';
 import './App.css';
@@ -53,6 +54,7 @@ function App() {
   
   const [isAddLinkModalOpen, setIsAddLinkModalOpen] = useState(false);
   const [isAddCategoryModalOpen, setIsAddCategoryModalOpen] = useState(false);
+  const [lastUsedCategoryId, setLastUsedCategoryId] = useState(null);
   const [editingLink, setEditingLink] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -61,7 +63,17 @@ function App() {
     const savedTheme = localStorage.getItem('linkCollectorTheme');
     return savedTheme ? savedTheme === 'dark' : true;
   });
-  const [activeChatCategory, setActiveChatCategory] = useState(null);
+  const [activeChatCategory, setActiveChatCategory] = useState(() => {
+    // Restore last active chat category from session
+    try {
+      const savedId = sessionStorage.getItem('activeChatCategoryId');
+      if (savedId) {
+        const cats = JSON.parse(localStorage.getItem('linkCollectorCategories') || '[]');
+        return cats.find(c => c.id === Number(savedId)) || null;
+      }
+    } catch (e) {}
+    return null;
+  });
   const [categoryChats, setCategoryChats] = useState(() => {
     // Load all category chats from localStorage
     const savedCategories = localStorage.getItem('linkCollectorCategories');
@@ -102,12 +114,55 @@ function App() {
   const [isLoadingFallback, setIsLoadingFallback] = useState(false);
 
   // Sidebar state
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Default closed
-  const [currentView, setCurrentView] = useState('main'); // 'main' or 'chat'
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    // Desktop: always open, Mobile: closed by default
+    return window.innerWidth > 1024;
+  });
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(() => {
+    // Desktop: start expanded, can be collapsed by user
+    return false;
+  });
+  const [currentView, setCurrentView] = useState(() => {
+    const savedView = sessionStorage.getItem('currentView');
+    const savedCatId = sessionStorage.getItem('activeChatCategoryId');
+    if (savedView === 'chat' && savedCatId) return 'chat';
+    if (savedView === 'freechat') return 'freechat';
+    return 'main';
+  });
+
+  // Free chat sessions state
+  const [freeChatSessions, setFreeChatSessions] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('freeChatSessions') || '[]');
+    } catch { return []; }
+  });
+  const [activeFreeSession, setActiveFreeSession] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('activeFreeSessionId');
+      if (!saved) return null;
+      const sessions = JSON.parse(localStorage.getItem('freeChatSessions') || '[]');
+      return sessions.find(s => s.id === Number(saved)) || null;
+    } catch { return null; }
+  });
+
+  // Handle window resize for sidebar state
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 1024) {
+        setIsSidebarOpen(true); // Always open on desktop
+      } else if (currentView === 'main') {
+        setIsSidebarOpen(false); // Closed on mobile when on main view
+        setIsSidebarCollapsed(false); // No collapsed state on mobile
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [currentView]);
 
   // Load from localStorage on mount (now only for initial setup)
   useEffect(() => {
-    console.log('App mounted with', categories.length, 'categories');
+    // mounted
   }, []);
 
   // Debounced search query handler
@@ -180,6 +235,24 @@ function App() {
     }
   }, [categories]);
 
+  // Keep activeChatCategory in sync with live categories state
+  // (covers the case where user refreshes on chat view — category was restored
+  //  from a localStorage snapshot but may now reflect stale data)
+  useEffect(() => {
+    if (activeChatCategory) {
+      const live = categories.find(c => c.id === activeChatCategory.id);
+      if (!live) {
+        // Category was deleted — go home
+        setActiveChatCategory(null);
+        setCurrentView('main');
+        sessionStorage.removeItem('currentView');
+        sessionStorage.removeItem('activeChatCategoryId');
+      } else if (live !== activeChatCategory) {
+        setActiveChatCategory(live);
+      }
+    }
+  }, [categories]);
+
   // Save resource contents to localStorage
   useEffect(() => {
     localStorage.setItem('resourceContents', JSON.stringify(resourceContents));
@@ -208,6 +281,7 @@ function App() {
       links: []
     };
     setCategories([...categories, newCategory]);
+    setLastUsedCategoryId(newCategory.id);
   };
 
   const deleteCategory = (categoryId) => {
@@ -302,21 +376,28 @@ function App() {
     } else {
       addLink(categoryId, link);
     }
+    setLastUsedCategoryId(categoryId);
     setIsAddLinkModalOpen(false);
   };
 
   const handleOpenChat = (category) => {
     setActiveChatCategory(category);
     setCurrentView('chat');
+    sessionStorage.setItem('currentView', 'chat');
+    sessionStorage.setItem('activeChatCategoryId', String(category.id));
   };
 
   const handleCloseChat = () => {
     setActiveChatCategory(null);
     setCurrentView('main');
+    sessionStorage.removeItem('currentView');
+    sessionStorage.removeItem('activeChatCategoryId');
   };
 
   const handleSelectCategory = (category) => {
     setActiveChatCategory(category);
+    sessionStorage.setItem('currentView', 'chat');
+    sessionStorage.setItem('activeChatCategoryId', String(category.id));
     
     // Ensure this category has a chat array
     if (!categoryChats[category.id]) {
@@ -343,10 +424,85 @@ function App() {
   const handleGoHome = () => {
     setCurrentView('main');
     setActiveChatCategory(null);
+    setActiveFreeSession(null);
+    sessionStorage.removeItem('currentView');
+    sessionStorage.removeItem('activeChatCategoryId');
+    sessionStorage.removeItem('activeFreeSessionId');
+  };
+
+  // Free chat handlers
+  const handleNewFreeChat = () => {
+    const newSession = {
+      id: Date.now(),
+      title: 'New Chat',
+      messages: [],
+      createdAt: Date.now()
+    };
+    const updated = [newSession, ...freeChatSessions];
+    setFreeChatSessions(updated);
+    localStorage.setItem('freeChatSessions', JSON.stringify(updated));
+    setActiveFreeSession(newSession);
+    setActiveChatCategory(null);
+    setCurrentView('freechat');
+    sessionStorage.setItem('currentView', 'freechat');
+    sessionStorage.setItem('activeFreeSessionId', String(newSession.id));
+    sessionStorage.removeItem('activeChatCategoryId');
+  };
+
+  const handleOpenFreeChat = (session) => {
+    setActiveFreeSession(session);
+    setActiveChatCategory(null);
+    setCurrentView('freechat');
+    sessionStorage.setItem('currentView', 'freechat');
+    sessionStorage.setItem('activeFreeSessionId', String(session.id));
+    sessionStorage.removeItem('activeChatCategoryId');
+  };
+
+  const handleUpdateFreeChatMessages = (sessionId, messages) => {
+    setFreeChatSessions(prev => {
+      const updated = prev.map(s => {
+        if (s.id !== sessionId) return s;
+        // Auto-title from first user message
+        const firstUser = messages.find(m => m.role === 'user');
+        const title = firstUser
+          ? firstUser.content.slice(0, 40) + (firstUser.content.length > 40 ? '…' : '')
+          : s.title;
+        return { ...s, messages, title };
+      });
+      localStorage.setItem('freeChatSessions', JSON.stringify(updated));
+      // Sync activeFreeSession title
+      const live = updated.find(s => s.id === sessionId);
+      if (live) setActiveFreeSession(live);
+      return updated;
+    });
+  };
+
+  const handleDeleteFreeSession = (sessionId) => {
+    setFreeChatSessions(prev => {
+      const updated = prev.filter(s => s.id !== sessionId);
+      localStorage.setItem('freeChatSessions', JSON.stringify(updated));
+      return updated;
+    });
+    if (activeFreeSession?.id === sessionId) {
+      // If deleting the active session, open most recent remaining or go home
+      const remaining = freeChatSessions.filter(s => s.id !== sessionId);
+      if (remaining.length > 0) {
+        handleOpenFreeChat(remaining[0]);
+      } else {
+        handleGoHome();
+      }
+    }
   };
 
   const handleToggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleToggleCollapse = () => {
+    // Only works on desktop
+    if (window.innerWidth > 1024) {
+      setIsSidebarCollapsed(!isSidebarCollapsed);
+    }
   };
 
   const getCategoryResourceContents = (categoryId) => {
@@ -436,7 +592,7 @@ function App() {
 
         return category;
       })
-      .filter(cat => cat !== null && cat.links.length > 0)
+      .filter(cat => cat !== null)
       .sort((a, b) => {
         // Sort: pinned categories first
         if (a.isPinned && !b.isPinned) return -1;
@@ -451,17 +607,21 @@ function App() {
     setShowIntroVideo(false);
   };
 
-  // Show mobile blocker on mobile devices
-  if (isMobile) {
-    return <MobileBlocker />;
-  }
-
   return (
     <>
-      {showIntroVideo && <IntroVideo onComplete={handleIntroComplete} />}
+      {showIntroVideo && (
+        <IntroLanding
+          onComplete={handleIntroComplete}
+          categories={categories}
+          onAddCategory={addCategory}
+          onAddLink={addLink}
+          isDarkMode={isDarkMode}
+          onToggleTheme={() => setIsDarkMode(d => !d)}
+        />
+      )}
       
-      <div className="app">
-      {/* Chat History Sidebar */}
+      <div className="app" style={showIntroVideo ? { display: 'none' } : undefined}>
+      {/* Chat History Sidebar - Always render on desktop, conditionally on mobile */}
       <ChatHistory
         categories={categories}
         activeCategory={activeChatCategory}
@@ -469,33 +629,64 @@ function App() {
         onGoHome={handleGoHome}
         isOpen={isSidebarOpen}
         onToggleSidebar={handleToggleSidebar}
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={handleToggleCollapse}
+        freeChatSessions={freeChatSessions}
+        activeFreeSession={activeFreeSession}
+        onOpenFreeChat={handleOpenFreeChat}
+        onNewFreeChat={handleNewFreeChat}
+        onDeleteFreeSession={handleDeleteFreeSession}
+        isFreeChat={currentView === 'freechat'}
       />
 
       {/* Main Content Area */}
-      <div className={`main-app-container ${isSidebarOpen ? 'sidebar-open' : 'sidebar-collapsed'} ${currentView === 'chat' ? 'chat-view' : ''}`}>
-        {currentView === 'chat' && activeChatCategory ? (
+      <div className={`main-app-container ${currentView === 'chat' || currentView === 'freechat' ? 'chat-view' : ''}`}>
+        {currentView === 'freechat' && activeFreeSession ? (
+          <ChatPage
+            key={`freechat-${activeFreeSession.id}`}
+            category={{ id: activeFreeSession.id, name: activeFreeSession.title, links: [] }}
+            messages={activeFreeSession.messages || []}
+            onUpdateMessages={(msgs) => handleUpdateFreeChatMessages(activeFreeSession.id, msgs)}
+            resourceContents={[]}
+            isPreparingChat={false}
+            isDarkMode={isDarkMode}
+            onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+            onToggleSidebar={handleToggleSidebar}
+            isPlayground={true}
+          />
+        ) : currentView === 'chat' && activeChatCategory ? (
           <ChatPage
             key={`chat-${activeChatCategory.id}`}
             category={activeChatCategory}
             messages={categoryChats[activeChatCategory.id] || []}
             onUpdateMessages={(messages) => handleUpdateCategoryChat(activeChatCategory.id, messages)}
             resourceContents={getCategoryResourceContents(activeChatCategory.id)}
+            isPreparingChat={
+              (() => {
+                const live = categories.find(c => c.id === activeChatCategory.id);
+                if (!live || live.links.length === 0) return false;
+                return live.links.some(link => resourceContents[`${live.id}_${link.id}`] === undefined);
+              })()
+            }
             isDarkMode={isDarkMode}
             onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+            onToggleSidebar={handleToggleSidebar}
           />
         ) : (
           <>
             <header className="header">
         <div className="header-content">
-          <img src={isDarkMode ? "/LinkDok-logo.svg" : "/LinkDok-logo-day.svg"} alt="LinkDoc" className="app-logo" />
-          <div className="header-actions">
+          <div className="header-left">
             <button 
-              className="btn btn-icon"
-              onClick={() => setShowIntroVideo(true)}
-              title="How to Use"
+              className="btn btn-icon menu-toggle-btn"
+              onClick={handleToggleSidebar}
+              title="Toggle Sidebar"
             >
-              <HelpCircle size={18} />
+              <Menu size={18} />
             </button>
+            <img src={isDarkMode ? "/LinkDok-logo.svg" : "/LinkDok-logo-day.svg"} alt="LinkDoc" className="app-logo" />
+          </div>
+          <div className="header-actions">
             <button 
               className="btn btn-icon"
               onClick={() => setIsDarkMode(!isDarkMode)}
@@ -503,14 +694,20 @@ function App() {
             >
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
+            <button 
+              className="btn btn-icon"
+              onClick={() => window.open('/help.html', '_blank')}
+              title="Help & Documentation"
+            >
+              <HelpCircle size={18} />
+            </button>
             <div className="add-dropdown" ref={addDropdownRef}>
               <button 
-                className="btn btn-primary"
+                className="btn btn-icon btn-add"
                 onClick={() => setIsAddDropdownOpen(!isAddDropdownOpen)}
+                title="Add New"
               >
                 <Plus size={18} />
-                Add New
-                <ChevronDown size={16} className={`dropdown-arrow ${isAddDropdownOpen ? 'open' : ''}`} />
               </button>
               {isAddDropdownOpen && (
                 <div className="add-dropdown-menu">
@@ -555,18 +752,14 @@ function App() {
         </div>
         
         <div className="filter-container">
-          <select
-            className="filter-select"
+          <CustomSelect
             value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-          >
-            <option value="all">All Categories</option>
-            {categories.map(cat => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setFilterCategory(val)}
+            options={[
+              { value: 'all', label: 'All Categories' },
+              ...categories.map(cat => ({ value: cat.id, label: cat.name }))
+            ]}
+          />
         </div>
       </div>
 
@@ -649,6 +842,7 @@ function App() {
         <AddLinkModal
           categories={categories}
           editingLink={editingLink}
+          defaultCategoryId={lastUsedCategoryId}
           onClose={() => {
             setIsAddLinkModalOpen(false);
             setEditingLink(null);

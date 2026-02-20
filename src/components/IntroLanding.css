@@ -1,0 +1,1158 @@
+/* ============================================================
+   IntroLanding – full-screen first-visit landing page
+   ============================================================ */
+
+/* ---------- overlay ---------- */
+.intro-landing-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: #080b12;
+  background-image: url('/background-linkdok.avif');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  overflow: hidden;   /* NO scroll ever */
+  /* No fade-in: overlay must be instantly opaque so main app never shows through */
+}
+
+.intro-landing-overlay.il-exiting {
+  animation: il-fadeOut 0.6s ease-out forwards;
+}
+
+@keyframes il-fadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.97); }
+}
+
+/* ---------- stars ---------- */
+.il-stars {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+.il-star {
+  position: absolute;
+  border-radius: 50%;
+  background: #ffffff;
+  animation: il-twinkle 3s ease-in-out infinite alternate;
+}
+@keyframes il-twinkle {
+  from { opacity: 0.1; }
+  to   { opacity: 0.7; }
+}
+
+/* ---------- page layout ---------- */
+.il-page {
+  position: relative;
+  z-index: 1;
+  height: 100%;         /* fill overlay exactly — no scroll */
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem 2rem 1rem;
+  gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  overflow: hidden;     /* content adapts to viewport, no overflow */
+}
+
+/* ---------- navbar ---------- */
+.il-navbar {
+  position: relative;   /* establish stacking context so dropdown floats above cards */
+  z-index: 50;          /* above cards which have backdrop-filter stacking contexts */
+  width: 100%;
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 16px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  animation: il-slideDown 0.5s ease 0.1s both;
+}
+
+@keyframes il-slideDown {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.il-logo {
+  display: flex;
+  align-items: center;
+}
+.il-logo-img {
+  height: 36px;
+  width: auto;
+  display: block;
+}
+
+.il-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;   /* anchor for dropdown */
+}
+
+/* Dropdown */
+.il-nav-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 4px;
+  min-width: 162px;
+  z-index: 10001;   /* above the overlay */
+  box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  animation: il-dropIn 0.18s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes il-dropIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+.il-nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: rgba(232,232,240,0.8);
+  font-size: 0.85rem;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, color 0.15s;
+}
+.il-nav-dropdown-item:hover {
+  background: rgba(255,255,255,0.08);
+  color: #e8e8f0;
+}
+.il-nav-dropdown-item svg {
+  flex-shrink: 0;
+  opacity: 0.55;
+}
+
+/* Active state for + button when dropdown is open */
+.il-icon-btn--active {
+  background: rgba(59,130,246,0.3) !important;
+  border-color: rgba(59,130,246,0.55) !important;
+  color: #93c5fd !important;
+}
+.il-icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  color: #a0a0b0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.il-icon-btn:hover {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border-color: rgba(255,255,255,0.2);
+}
+.il-icon-btn--plus {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #60a5fa;
+}
+.il-icon-btn--plus:hover {
+  background: rgba(59, 130, 246, 0.35);
+  color: #93c5fd;
+}
+
+/* ---------- main grid ---------- */
+.il-main {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Two-column grid */
+.il-grid {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+  align-items: stretch;
+  min-height: 0;
+}
+
+.il-col-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-width: 0;
+}
+
+.il-col-right {
+  flex: 0 0 auto;
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;        /* fill the grid row height */
+  overflow: hidden;            /* never let children blow out the column */
+  animation: il-slideUp 0.5s ease 0.28s both;
+}
+
+.il-col-right .il-card--easy {
+  flex: 1;
+  min-height: 0;               /* critical: lets flex child shrink instead of grow */
+  overflow: hidden;
+}
+
+.il-row {
+  display: flex;
+  gap: 1rem;
+  width: 100%;
+}
+
+.il-row--top {
+  animation: il-slideUp 0.5s ease 0.2s both;
+}
+.il-row--bottom {
+  animation: il-slideUp 0.5s ease 0.35s both;
+}
+.il-row--teaser {
+  animation: il-slideUp 0.5s ease 0.48s both;
+}
+
+@keyframes il-slideUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- shared card ---------- */
+.il-card {
+  background: #1a1a1a;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 1.75rem 1.75rem;
+  color: #e8e8f0;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.25s, background 0.25s, backdrop-filter 0.25s;
+}
+@media (hover: hover) {
+  .il-card:hover {
+    background: rgba(119, 119, 119, 0.28);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-color: rgba(119, 119, 119, 0.55);
+  }
+}
+
+/* ---------- card: description ---------- */
+.il-card--desc {
+  flex: 1;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+.il-desc-text {
+  font-size: 1.15rem;
+  font-weight: 500;
+  line-height: 1.65;
+  color: #d8d8eb;
+}
+.il-add-link-btn {
+  align-self: flex-start;
+  padding: 0.75rem 2rem;
+  border-radius: 50px;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  background: transparent;
+  color: #d8d8eb;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.2px;
+  font-family: inherit;
+  margin-bottom: 8px;
+}
+.il-add-link-btn:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.45);
+  color: #fff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+}
+
+/* ---------- card: models ---------- */
+.il-card--models {
+  flex: 1;
+  justify-content: flex-start;
+  gap: 0.9rem;
+  overflow: hidden;
+}
+.il-models-text {
+  font-size: 1.15rem;
+  font-weight: 600;
+  line-height: 1.55;
+  color: #d8d8eb;
+  flex-shrink: 0;
+}
+
+/* Ticker */
+.il-ticker-wrap {
+  overflow: hidden;
+  position: relative;
+  height: 100px;
+  flex-shrink: 0;
+  margin-top: 0.4rem;
+  padding-left: 4px;
+  margin-left: -4px;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%);
+}
+.il-ticker {
+  display: flex;
+  flex-direction: column;
+  animation: il-tickerScroll 10s linear infinite;
+}
+@keyframes il-tickerScroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.il-ticker-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.38rem 0;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.il-ticker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
+}
+.il-ticker-name {
+  flex: 1;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #d8d8eb;
+  letter-spacing: 0.2px;
+}
+.il-ticker-pill {
+  font-size: 0.62rem;
+  font-weight: 700;
+  border: 1px solid;
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  opacity: 0.75;
+  letter-spacing: 0.5px;
+}
+
+/* ==========================================================
+   Frame 6 – zoom-in close-up → zoom out → cursor tap → dropdown
+   Animation cycle: 8s total, infinite
+   ──────────────────────────────────────────────────────────
+   0  – 15% : zoomed in on + button (close-up, buttons only visible)
+   15 – 28% : zoom out to full nav
+   28 – 38% : cursor appears, glides to + button
+   38 – 48% : cursor taps + button, dropdown appears
+   48 – 62% : cursor moves to Add Link row
+   62 – 76% : cursor hovers, row highlights
+   76 – 86% : dropdown fades, cursor out
+   86 – 100%: reset pause
+   ========================================================== */
+
+.il-card--easy {
+  overflow: hidden;
+  padding: 0.7rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: #1a1a1a;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-color: rgba(255,255,255,0.08);
+}
+@media (hover: hover) {
+  .il-card--easy:hover {
+    background: rgba(119, 119, 119, 0.28);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border-color: rgba(119, 119, 119, 0.55);
+  }
+}
+
+/* ── TOP SECTION ── */
+.ilm-top-section {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* ── ZOOM WRAPPER: anchored top-right so top edge never clips ── */
+.ilm-nav-zoom {
+  overflow: hidden;       /* clips left side during zoom-in */
+  border-radius: 7px;
+  flex-shrink: 0;
+  transform-origin: top right;   /* top stays fixed → no top clipping */
+  animation: ilm-navZoom 8s infinite;
+}
+/* Zoom: hold close-up → ease out (partial) → cursor stuff → ease back in → seamless loop */
+@keyframes ilm-navZoom {
+  0%    { transform: scale(2.2); animation-timing-function: ease-in-out; }
+  12%   { transform: scale(2.2); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  30%   { transform: scale(1.45); animation-timing-function: linear; }  /* partial zoom — logo still clipped */
+  82%   { transform: scale(1.45); animation-timing-function: cubic-bezier(0.4, 0, 0.8, 1); } /* start zoom back in */
+  100%  { transform: scale(2.2); }  /* seamless loop — lands exactly on frame 0 */
+}
+
+/* Nav bar */
+.ilm-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 7px;
+  padding: 0.4rem 0.5rem;
+}
+.ilm-logo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.ilm-logo-icon {
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.75);
+  flex-shrink: 0;
+}
+.ilm-logo-text {
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: #e2e2f0;
+  letter-spacing: 0.3px;
+}
+.ilm-nav-icons {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.ilm-nav-btn {
+  width: 19px; height: 19px;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.45);
+  flex-shrink: 0;
+}
+.ilm-nav-btn--blue {
+  background: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.18);
+  color: rgba(255,255,255,0.7);
+}
+
+/* + button tap pulse – fires at 38-46% of 8s = 3.04s–3.68s */
+.ilm-plus-btn {
+  animation: ilm-plusTap 8s ease infinite;
+  transform-origin: center;
+}
+@keyframes ilm-plusTap {
+  0%,40%  { transform: scale(1);    background: rgba(255,255,255,0.1);  box-shadow: none; }
+  44%     { transform: scale(0.74); background: rgba(255,255,255,0.22); box-shadow: 0 0 0 4px rgba(255,255,255,0.12); animation-timing-function: cubic-bezier(0.34,1.56,0.64,1); }
+  49%     { transform: scale(1.1);  background: rgba(255,255,255,0.15); box-shadow: 0 0 0 7px rgba(255,255,255,0); }
+  53%,100%{ transform: scale(1);    background: rgba(255,255,255,0.1);  box-shadow: none; }
+}
+
+/* Dropdown – hidden until after tap (38%), fades at 86% */
+.ilm-dropdown {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.3rem 0.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  transform-origin: top right;
+  animation: ilm-dropCycle 8s ease infinite;
+}
+@keyframes ilm-dropCycle {
+  0%,47%  { opacity: 0; transform: scale(0.92) translateY(-6px); pointer-events: none; }
+  53%     { opacity: 1; transform: scale(1)    translateY(0); }
+  82%     { opacity: 1; transform: scale(1)    translateY(0); }
+  88%,100%{ opacity: 0; transform: scale(0.92) translateY(-6px); pointer-events: none; }
+}
+.ilm-menu-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0.22rem 0.28rem;
+  border-radius: 4px;
+}
+/* Add Link row highlights when cursor hovers (62–76% of 8s) */
+.ilm-menu-row--hover {
+  animation: ilm-rowHighlight 8s ease infinite;
+}
+@keyframes ilm-rowHighlight {
+  0%,62%  { background: transparent; }
+  66%     { background: rgba(255,255,255,0.09); }
+  76%     { background: rgba(255,255,255,0.09); }
+  82%,100%{ background: transparent; }
+}
+.ilm-menu-icon {
+  width: 13px; height: 13px;
+  border-radius: 3px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.ilm-menu-icon--cat  { color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.08); }
+.ilm-menu-icon--link { color: rgba(255,255,255,0.55); background: rgba(255,255,255,0.08); }
+.ilm-menu-label {
+  font-size: 0.63rem;
+  font-weight: 500;
+  color: rgba(210,215,235,0.9);
+  white-space: nowrap;
+}
+
+/* ── CURSOR ──
+   Coordinates relative to top-left of .ilm-top-section
+   + btn center  ≈ x:163  y:14   (right side of nav)
+   Add Link row  ≈ x:62   y:78   (inside dropdown)
+
+   8s timeline:
+   0  –28%: hidden (zoom-in and zoom-out are playing)
+   28 –36%: appear at + btn position
+   36 –42%: land exactly on + btn
+   42 –48%: tap pause
+   48 –62%: sweep to Add Link
+   62 –76%: hover on Add Link
+   76 –84%: fade out
+   84–100%: hidden reset
+*/
+.ilm-cursor {
+  position: absolute;
+  top: 0; left: 0;
+  pointer-events: none;
+  z-index: 10;
+  animation: ilm-cursorPath 8s cubic-bezier(0.4,0,0.2,1) infinite;
+}
+@keyframes ilm-cursorPath {
+  0%,30%  { transform: translate(175px, 4px);  opacity: 0; }
+  34%     { transform: translate(175px, 4px);  opacity: 1; }
+  42%     { transform: translate(162px, 14px); opacity: 1; animation-timing-function: ease-in-out; }  /* land on + */
+  50%     { transform: translate(162px, 14px); opacity: 1; }  /* tap pause */
+  64%     { transform: translate(60px,  78px); opacity: 1; animation-timing-function: ease-in-out; }  /* on Add Link */
+  76%     { transform: translate(60px,  78px); opacity: 1; }  /* hover */
+  83%     { transform: translate(60px,  78px); opacity: 0; }  /* fade */
+  100%    { transform: translate(175px, 4px);  opacity: 0; }  /* reset */
+}
+
+/* ── SEPARATOR ── */
+.ilm-sep {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 0.45rem 0;
+  flex-shrink: 0;
+}
+
+/* ── CHAT SECTION ── */
+.ilm-chat-wrap {
+  flex: 1;
+  min-height: 0;                /* shrink, don't grow the card */
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  overflow: hidden;             /* hard ceiling */
+}
+.ilm-chat-view {
+  flex: 1;
+  min-height: 0;
+  height: 0;                    /* computed height from flex, never from content */
+  overflow-y: scroll;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  contain: strict;              /* hard-isolate: no size/layout escape to parent */
+  mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 18%, black 100%);
+  pointer-events: none;         /* view-only: user cannot scroll or interact */
+}
+.ilm-chat-view::-webkit-scrollbar { display: none; }
+
+.ilm-chat-track {
+  display: flex;
+  flex-direction: column;
+  /* NO min-height:100% + justify-content:flex-end — causes circular sizing in scroll containers */
+  /* Use .ilm-spacer sibling instead to push messages to bottom */
+  gap: 6px;
+  padding: 0 2px 4px;
+}
+
+/* Pushes messages toward the bottom when there are only a few */
+.ilm-spacer {
+  flex: 1;
+}
+
+/* Each message slides in from slightly below */
+.ilm-msg {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+  animation: ilm-msgIn 0.28s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes ilm-msgIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.ilm-msg--user { justify-content: flex-end; }
+.ilm-msg--ai   { justify-content: flex-start; }
+
+/* AI avatar */
+.ilm-ava {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  flex-shrink: 0;
+  margin-bottom: 1px;
+}
+
+/* Bubbles */
+.ilm-bub {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 5px 8px;
+  border-radius: 9px;
+  max-width: 82%;
+}
+.ilm-bub--u {
+  background: rgba(255,255,255,0.14);
+  border-radius: 9px 9px 2px 9px;
+}
+.ilm-bub--a {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 9px 9px 9px 2px;
+}
+
+/* Text */
+.ilm-txt {
+  font-size: 0.43rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.82);
+  white-space: nowrap;
+  line-height: 1.4;
+  letter-spacing: 0.1px;
+}
+.ilm-txt--dim {
+  color: rgba(255,255,255,0.48);
+  font-weight: 400;
+}
+
+/* Typing dots */
+.ilm-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 9px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 9px 9px 9px 2px;
+}
+.ilm-dots span {
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.5);
+  display: block;
+  animation: ilm-dotBounce 0.9s ease-in-out infinite;
+}
+.ilm-dots span:nth-child(2) { animation-delay: 0.15s; }
+.ilm-dots span:nth-child(3) { animation-delay: 0.30s; }
+@keyframes ilm-dotBounce {
+  0%,60%,100%{ transform: translateY(0);    opacity: 0.4; }
+  30%        { transform: translateY(-3px); opacity: 1; }
+}
+
+/* ── CHAT INPUT ──
+   30s total cycle = 3 queries × 10s each
+   Each slot: 0–5s type  5–6s hold  6–7s clear  7–10s empty
+   txt1: 0–10s   txt2: 10–20s   txt3: 20–30s
+*/
+.ilm-ci-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px;
+  padding: 0.28rem 0.38rem;
+  flex-shrink: 0;
+}
+.ilm-ci-plus {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.3);
+  width: 12px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.ilm-ci-bar {
+  flex: 1;
+  position: relative;
+  height: 13px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+.ilm-ci-txt {
+  position: absolute;
+  left: 0;
+  font-size: 0.43rem;
+  font-weight: 500;
+  color: rgba(255,255,255,0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  letter-spacing: 0.1px;
+  opacity: 0;
+}
+/* txt1: active 0–33% of 30s (0–10s) */
+.ilm-ci-txt1 { animation: ilm-txt1 30s linear infinite; }
+@keyframes ilm-txt1 {
+  0%      { max-width:0;     opacity:0; }
+  2%      { opacity:1; }
+  18%     { max-width:100%;  opacity:1; }
+  22%     { max-width:100%;  opacity:1; }
+  25%,100%{ max-width:0;     opacity:0; }
+}
+/* txt2: active 33–66% (10–20s) */
+.ilm-ci-txt2 { animation: ilm-txt2 30s linear infinite; }
+@keyframes ilm-txt2 {
+  0%,33%  { max-width:0;     opacity:0; }
+  35%     { opacity:1; }
+  50%     { max-width:100%;  opacity:1; }
+  55%     { max-width:100%;  opacity:1; }
+  58%,100%{ max-width:0;     opacity:0; }
+}
+/* txt3: active 66–100% (20–30s) */
+.ilm-ci-txt3 { animation: ilm-txt3 30s linear infinite; }
+@keyframes ilm-txt3 {
+  0%,66%  { max-width:0;     opacity:0; }
+  68%     { opacity:1; }
+  83%     { max-width:100%;  opacity:1; }
+  88%     { max-width:100%;  opacity:1; }
+  91%,100%{ max-width:0;     opacity:0; }
+}
+
+/* Cursor blinks continuously */
+.ilm-ci-cursor {
+  display: inline-block;
+  width: 1px; height: 9px;
+  background: rgba(255,255,255,0.45);
+  border-radius: 1px;
+  margin-left: 1px;
+  animation: ilm-cursorBlink 0.75s step-end infinite;
+}
+@keyframes ilm-cursorBlink {
+  0%,100%{ opacity:1; }
+  50%    { opacity:0; }
+}
+
+/* Send button flashes at each send: ~22%,55%,88% of 30s */
+.ilm-ci-send {
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.6);
+  flex-shrink: 0;
+  animation: ilm-sendFlash 30s ease infinite;
+}
+@keyframes ilm-sendFlash {
+  0%,21%      { background:rgba(255,255,255,0.1);  transform:scale(1);   box-shadow:none; }
+  23%         { background:rgba(255,255,255,0.32); transform:scale(1.2); box-shadow:0 0 0 4px rgba(255,255,255,0.07); }
+  25%,54%     { background:rgba(255,255,255,0.1);  transform:scale(1);   box-shadow:none; }
+  56%         { background:rgba(255,255,255,0.32); transform:scale(1.2); box-shadow:0 0 0 4px rgba(255,255,255,0.07); }
+  58%,87%     { background:rgba(255,255,255,0.1);  transform:scale(1);   box-shadow:none; }
+  89%         { background:rgba(255,255,255,0.32); transform:scale(1.2); box-shadow:0 0 0 4px rgba(255,255,255,0.07); }
+  91%,100%    { background:rgba(255,255,255,0.1);  transform:scale(1);   box-shadow:none; }
+}
+
+/* ---------- card: chat ---------- */
+.il-card--chat {
+  flex: 1;
+  gap: 1.1rem;
+  padding: 1.6rem 1.5rem;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+.il-chat-title {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #d8d8eb;
+  text-align: center;
+}
+.il-chat-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.05);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 50px;
+  padding: 0.45rem 0.6rem 0.45rem 0.6rem;
+  transition: border-color 0.2s;
+}
+.il-chat-input-wrap:hover,
+.il-chat-input-wrap:focus-within {
+  border-color: rgba(255,255,255,0.12);  /* view-only: no active highlight */
+}
+.il-chat-plus {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: rgba(255,255,255,0.06);
+  color: #a0a0b8;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+.il-chat-plus:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #93c5fd;
+}
+.il-chat-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #c0c0d0;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+.il-chat-input::placeholder {
+  color: rgba(160,160,176,0.55);
+}
+
+/* ── animated typing placeholder bar ── */
+.il-chat-anim-bar {
+  flex: 1;
+  position: relative;
+  height: 1.2rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+/* Each phrase: absolutely positioned, types in via max-width, fades out */
+/* 25s total · 5 slots × 5s each · 1s gap between */
+.il-chat-ph {
+  position: absolute;
+  left: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  max-width: 0;
+  opacity: 0;
+  color: rgba(160,160,176,0.6);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+/* ph1 : 0–5s  → 0–20% */
+.il-chat-ph1 { animation: il-ph1 25s linear infinite; }
+@keyframes il-ph1 {
+  0%            { max-width:0;    opacity:0; }
+  2%            { opacity:1; }
+  13%           { max-width:100%; opacity:1; }
+  16%           { max-width:100%; opacity:1; }
+  19%,100%      { max-width:0;    opacity:0; }
+}
+/* ph2 : 5–10s → 20–40% */
+.il-chat-ph2 { animation: il-ph2 25s linear infinite; }
+@keyframes il-ph2 {
+  0%,20%        { max-width:0;    opacity:0; }
+  22%           { opacity:1; }
+  33%           { max-width:100%; opacity:1; }
+  36%           { max-width:100%; opacity:1; }
+  39%,100%      { max-width:0;    opacity:0; }
+}
+/* ph3 : 10–15s → 40–60% */
+.il-chat-ph3 { animation: il-ph3 25s linear infinite; }
+@keyframes il-ph3 {
+  0%,40%        { max-width:0;    opacity:0; }
+  42%           { opacity:1; }
+  53%           { max-width:100%; opacity:1; }
+  56%           { max-width:100%; opacity:1; }
+  59%,100%      { max-width:0;    opacity:0; }
+}
+/* ph4 : 15–20s → 60–80% */
+.il-chat-ph4 { animation: il-ph4 25s linear infinite; }
+@keyframes il-ph4 {
+  0%,60%        { max-width:0;    opacity:0; }
+  62%           { opacity:1; }
+  73%           { max-width:100%; opacity:1; }
+  76%           { max-width:100%; opacity:1; }
+  79%,100%      { max-width:0;    opacity:0; }
+}
+/* ph5 : 20–25s → 80–100% */
+.il-chat-ph5 { animation: il-ph5 25s linear infinite; }
+@keyframes il-ph5 {
+  0%,80%        { max-width:0;    opacity:0; }
+  82%           { opacity:1; }
+  93%           { max-width:100%; opacity:1; }
+  96%           { max-width:100%; opacity:1; }
+  99%,100%      { max-width:0;    opacity:0; }
+}
+/* blinking cursor inside the bar */
+.il-chat-ph-cursor {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+  width: 1.5px;
+  height: 0.9rem;
+  background: rgba(160,160,176,0.5);
+  border-radius: 1px;
+  margin-left: 1px;
+  flex-shrink: 0;
+  animation: il-ph-blink 0.8s step-end infinite;
+}
+@keyframes il-ph-blink {
+  0%,100% { opacity:1; }
+  50%     { opacity:0; }
+}
+.il-chat-send {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: linear-gradient(135deg, #3b82f6, #6366f1);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.il-chat-send:hover {
+  opacity: 0.85;
+  transform: scale(1.05);
+}
+
+/* ---------- card: teaser ---------- */
+.il-card--teaser {
+  flex: 1;
+  padding: 1.4rem 1.75rem;
+  overflow: hidden;
+  position: relative;
+  background: #1a1a1a;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.il-teaser-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 120% at 50% 120%, rgba(119,119,119,0.13) 0%, transparent 70%);
+  pointer-events: none;
+}
+.il-teaser-body {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+.il-teaser-tag {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: rgba(232,232,240,0.55);
+  letter-spacing: 0.2px;
+  margin: 0;
+}
+
+/* Feature chips */
+.il-teaser-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.il-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: rgba(232,232,240,0.75);
+  transition: background 0.2s, border-color 0.2s;
+}
+.il-chip:hover {
+  background: rgba(119,119,119,0.18);
+  border-color: rgba(119,119,119,0.45);
+  color: #e8e8f0;
+}
+.il-chip-icon {
+  display: flex;
+  align-items: center;
+  color: rgba(255,255,255,0.45);
+}
+
+/* Footer row */
+.il-teaser-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.il-teaser-free {
+  font-size: 0.68rem;
+  color: rgba(232,232,240,0.3);
+  letter-spacing: 0.2px;
+}
+.il-teaser-cta {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.32rem 0.85rem;
+  border-radius: 50px;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(232,232,240,0.85);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 0.2px;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.il-teaser-cta:hover {
+  background: rgba(119,119,119,0.28);
+  border-color: rgba(119,119,119,0.55);
+  color: #fff;
+}
+
+/* ---------- copyright ---------- */
+.il-copyright {
+  text-align: center;
+  font-size: 0.65rem;
+  color: rgba(232,232,240,0.2);
+  letter-spacing: 0.3px;
+  padding: 0.35rem 0 0;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   MOBILE  (≤ 767 px)
+   Cards stack top→down in user-defined order:
+     1. desc  2. models  3. chat  4. easy/ui  5. teaser
+   Page scrolls vertically — everything else is untouched.
+   ============================================================ */
+@media (max-width: 767px) {
+
+  /* ── Allow vertical scroll on mobile, hide the scrollbar ── */
+  .intro-landing-overlay {
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none;          /* Firefox */
+    -ms-overflow-style: none;       /* IE/Edge */
+  }
+  .intro-landing-overlay::-webkit-scrollbar {
+    display: none;                  /* Chrome/Safari/WebKit */
+  }
+
+  /* ── Page grows with content, scroll handled by overlay ── */
+  .il-page {
+    height: auto;
+    min-height: 100%;
+    max-height: none;
+    overflow: visible;
+    padding: 1rem 1rem 1.5rem;
+    gap: 0.75rem;
+  }
+
+  /* ── Main: no longer fills viewport height ── */
+  .il-main {
+    flex: none;
+    min-height: unset;
+    gap: 0.75rem;
+  }
+
+  /* ── Grid: single column (left col first, right col second) ── */
+  .il-grid {
+    flex-direction: column;
+    min-height: unset;
+  }
+
+  /* ── Left column: full width, natural height ── */
+  .il-col-left {
+    min-width: unset;
+    width: 100%;
+    gap: 0.75rem;
+  }
+
+  /* ── Top row (desc + models): stack vertically ── */
+  .il-row--top {
+    flex-direction: column;
+  }
+
+  /* ── Right column (UI card): full width, auto height ── */
+  .il-col-right {
+    width: 100%;
+    align-self: auto;
+  }
+
+  /* ── Easy card: fixed height so internal flex chat can size properly ── */
+  .il-col-right .il-card--easy {
+    flex: none;
+    height: 340px;
+    min-height: unset;
+  }
+
+  /* ── Slightly tighter padding on all cards ── */
+  .il-card {
+    padding: 1.25rem;
+  }
+
+  /* ── Navbar: tighter horizontal padding ── */
+  .il-navbar {
+    padding: 0.75rem 1rem;
+    border-radius: 14px;
+  }
+
+  /* ── Typography scale-down ── */
+  .il-desc-text {
+    font-size: 1rem;
+  }
+  .il-models-text {
+    font-size: 1rem;
+  }
+  .il-chat-title {
+    font-size: 1rem;
+  }
+}

@@ -45,6 +45,12 @@ export async function extractContentFromURL(url) {
  */
 async function tryDiffbotExtraction(url) {
   try {
+    // Diffbot requires the Vercel serverless function — skip entirely on local dev
+    const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    if (isLocalDev) {
+      return { success: false };
+    }
+
     console.log(`[Content Extractor] Method 1: Trying Diffbot API via serverless...`);
     
     const response = await fetch(DIFFBOT_ENDPOINT, {

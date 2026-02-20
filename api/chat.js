@@ -2,29 +2,45 @@
  * Vercel Serverless Function - OpenRouter Chat API
  * Keeps API key secure on the server
  */
+import { rateLimit, getIP, setCorsHeaders, isOriginAllowed, validateMessages } from './_rateLimit.js';
 
 export default async function handler(req, res) {
-  // Only allow POST requests
+  const origin = req.headers['origin'];
+  setCorsHeaders(res, origin);
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  if (origin && !isOriginAllowed(origin)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  // Rate limit: 8 requests / 60 s per IP (fallback model — slightly stricter)
+  const ip = getIP(req);
+  const rl = rateLimit(ip, { limit: 8, windowMs: 60_000 });
+  if (!rl.allowed) {
+    res.setHeader('Retry-After', String(rl.retryAfter));
+    return res.status(429).json({
+      error: 'Too many requests',
+      retryAfter: rl.retryAfter,
+      rateLimited: true
+    });
   }
 
   const API_KEY = process.env.OPENROUTER_API_KEY;
 
   if (!API_KEY) {
-    return res.status(500).json({ 
-      error: 'API key not configured on server' 
-    });
+    return res.status(500).json({ error: 'Service temporarily unavailable' });
   }
 
   try {
     const { messages, model, stream = false, temperature = 0.7, maxTokens = 4000 } = req.body;
 
-    if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({ 
-        error: 'Invalid request: messages array required' 
-      });
-    }
+    const msgError = validateMessages(messages);
+    if (msgError) return res.status(400).json({ error: msgError });
 
     const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
     const APP_URL = process.env.APP_URL || req.headers.origin || '';
@@ -79,8 +95,9 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('OpenRouter API Error:', error);
-    res.status(500).json({ 
-      error: error.message || 'Failed to process request' 
-    });
+    if (!res.headersSent) {
+      res.status(500).json({ error: 'AI request failed. Please try again.' });
+    }
+    if (!res.writableEnded) res.end();
   }
 }

@@ -1,0 +1,175 @@
+/* ============================================================
+   CustomSelect – polished dropdown component
+   Works in both dark-mode (default) and light-mode
+   ============================================================ */
+
+.csel-root {
+  position: relative;
+  width: 100%;
+  user-select: none;
+}
+
+/* ── Trigger ── */
+.csel-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-tertiary);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.csel-trigger:hover {
+  border-color: #ffffff;
+  background: var(--bg-primary);
+}
+
+body.light-mode .csel-trigger:hover {
+  border-color: var(--accent);
+  background: var(--bg-primary);
+}
+
+.csel-trigger--open {
+  border-color: var(--accent);
+  background: var(--bg-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18);
+}
+
+.csel-value {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.csel-placeholder {
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* Chevron rotates when open */
+.csel-chevron {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+  transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.15s;
+}
+.csel-trigger:hover .csel-chevron,
+.csel-trigger--open .csel-chevron {
+  color: var(--accent);
+}
+.csel-chevron--up {
+  transform: rotate(180deg);
+}
+
+/* ── Dropdown list ── */
+.csel-list {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  background: var(--bg-secondary);
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,0.25),
+    0 10px 30px -5px rgba(0,0,0,0.35);
+  animation: cselDropIn 0.16s cubic-bezier(0.22, 1, 0.36, 1) both;
+  overflow: hidden;
+  max-height: 260px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.csel-list::-webkit-scrollbar { width: 4px; }
+.csel-list::-webkit-scrollbar-track { background: transparent; }
+.csel-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+@keyframes cselDropIn {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+/* ── Option ── */
+.csel-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.58rem 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  transition: background 0.12s ease, color 0.12s ease;
+  position: relative;
+}
+
+.csel-option:hover {
+  background: rgba(99, 102, 241, 0.12);
+  color: #818cf8;
+}
+
+.csel-option--active {
+  background: rgba(59, 130, 246, 0.14);
+  color: var(--accent);
+}
+
+.csel-option--active:hover {
+  background: rgba(59, 130, 246, 0.2);
+}
+
+.csel-opt-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.csel-opt-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.csel-check {
+  flex-shrink: 0;
+  color: var(--accent);
+  margin-left: auto;
+}
+
+/* ── Light-mode overrides ── */
+body.light-mode .csel-trigger {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+body.light-mode .csel-list {
+  box-shadow:
+    0 4px 6px -1px rgba(0,0,0,0.08),
+    0 10px 30px -5px rgba(0,0,0,0.12);
+}
+body.light-mode .csel-option:hover {
+  background: rgba(99, 102, 241, 0.09);
+}
+body.light-mode .csel-option--active {
+  background: rgba(59, 130, 246, 0.1);
+}
