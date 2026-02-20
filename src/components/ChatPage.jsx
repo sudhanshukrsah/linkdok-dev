@@ -2,15 +2,24 @@
 import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import * as pdfjsLib from "pdfjs-dist";
 import { askTutor, AVAILABLE_MODELS } from "../utils/aiTutor";
 import "./ChatPage.css";
+
+// Set pdfjs worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 // File type helpers
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
 const TEXT_TYPES  = ["text/plain", "text/markdown", "text/csv", "text/javascript", "text/typescript",
                      "application/json", "application/xml", "text/html", "text/css"];
-const MAX_IMAGE_BYTES = 4 * 1024 * 1024; // 4 MB
-const MAX_TEXT_BYTES  = 200 * 1024;       // 200 KB
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB per image
+const MAX_TEXT_BYTES  = 500 * 1024;       // 500 KB for text files
+const MAX_PDF_BYTES   = 20 * 1024 * 1024; // 20 MB for PDFs
+const MAX_IMAGES      = 5;                // max images per message
 
 const SUGGESTED_QUESTIONS = [
   "Summarize the key topics in these resources",
@@ -150,6 +159,21 @@ function ChatPage({
   }, []);
 
   // -- File attachment ---------------------------------------------
+
+  // Extract text from a PDF file using pdfjs-dist
+  const extractPdfText = async (file) => {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let fullText = '';
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map(item => item.str).join(' ');
+      fullText += `--- Page ${i} ---\n${pageText}\n`;
+    }
+    return { text: fullText, pages: pdf.numPages };
+  };
+
   const handleFileSelect = async (e) => {
     setAttachError("");
     const files = Array.from(e.target.files || []);
@@ -157,15 +181,45 @@ function ChatPage({
 
     for (const file of files) {
       if (IMAGE_TYPES.includes(file.type)) {
+        const currentImages = attachments.filter(a => a.type === "image").length;
+        if (currentImages >= MAX_IMAGES) {
+          setAttachError(`Max ${MAX_IMAGES} images per message`);
+          continue;
+        }
         if (file.size > MAX_IMAGE_BYTES) {
-          setAttachError(`${file.name}: image too large (max 4 MB)`);
+          setAttachError(`${file.name}: image too large (max 5 MB)`);
           continue;
         }
         const data = await readAsDataURL(file);
         setAttachments(prev => [...prev, { name: file.name, type: "image", data, mimeType: file.type, preview: data }]);
+
+      } else if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+        if (file.size > MAX_PDF_BYTES) {
+          setAttachError(`${file.name}: PDF too large (max 20 MB)`);
+          continue;
+        }
+        try {
+          setAttachError(`Reading ${file.name}…`);
+          const { text, pages } = await extractPdfText(file);
+          setAttachError("");
+          if (!text.trim()) {
+            setAttachError(`${file.name}: could not extract text (scanned image PDF is not supported)`);
+            continue;
+          }
+          setAttachments(prev => [...prev, {
+            name: file.name,
+            type: "text",
+            data: text,
+            mimeType: "application/pdf",
+            pages
+          }]);
+        } catch (err) {
+          setAttachError(`${file.name}: failed to read PDF — ${err.message}`);
+        }
+
       } else if (TEXT_TYPES.includes(file.type) || file.name.match(/\.(txt|md|csv|json|js|ts|jsx|tsx|py|html|css|xml)$/i)) {
         if (file.size > MAX_TEXT_BYTES) {
-          setAttachError(`${file.name}: file too large (max 200 KB)`);
+          setAttachError(`${file.name}: file too large (max 500 KB)`);
           continue;
         }
         const data = await readAsText(file);
@@ -675,7 +729,7 @@ function ChatPage({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*,.txt,.md,.csv,.json,.js,.ts,.jsx,.tsx,.py,.html,.css,.xml"
+            accept="image/*,.pdf,.txt,.md,.csv,.json,.js,.ts,.jsx,.tsx,.py,.html,.css,.xml"
             multiple
             style={{ display: "none" }}
             onChange={handleFileSelect}

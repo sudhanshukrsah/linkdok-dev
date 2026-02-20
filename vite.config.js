@@ -7,6 +7,9 @@ export default defineConfig(({ mode }) => {
 
   return {
     plugins: [react()],
+    build: {
+      chunkSizeWarningLimit: 1500, // pdfjs-dist worker is ~1MB — expected
+    },
     server: {
       proxy: {
         // Local dev proxy: Vite injects the NVIDIA API key server-side (no CORS, key never reaches browser)

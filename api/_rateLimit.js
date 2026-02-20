@@ -86,7 +86,7 @@ export function setCorsHeaders(res, origin) {
 // ---------------------------------------------------------------------------
 const ALLOWED_ROLES = new Set(['user', 'assistant', 'system']);
 const MAX_MESSAGES  = 30;
-const MAX_MSG_CHARS = 50_000; // ~12,500 tokens — generous but bounded
+const MAX_MSG_CHARS = 800_000; // supports base64 images (~600KB) and large extracted content
 
 /**
  * Returns an error string on failure, null when valid.

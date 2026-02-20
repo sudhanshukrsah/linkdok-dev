@@ -324,20 +324,45 @@ async function callAI(messages, question, intent, selectedModel, signal, onChunk
 }
 
 // -----------------------------------------------------------------
-// Build user message content (supports image + text file attachments)
+// Build user message content (supports image + text/PDF file attachments)
 // -----------------------------------------------------------------
+
+// Smart truncation: keep the beginning AND end of very long documents
+// so the AI always sees the intro context plus the tail content.
+function smartTruncate(text, maxChars = 25000) {
+  if (text.length <= maxChars) return text;
+  const half = Math.floor(maxChars / 2);
+  const head = text.slice(0, half);
+  const tail = text.slice(-half);
+  const skipped = text.length - maxChars;
+  return `${head}\n\n[... ${skipped.toLocaleString()} characters omitted for length — showing beginning and end ...]\n\n${tail}`;
+}
+
 function buildUserContent(text, attachments = []) {
   if (!attachments.length) return text;
 
-  const content = [{ type: 'text', text }];
-  for (const file of attachments) {
-    if (file.type === 'image') {
-      content.push({ type: 'image_url', image_url: { url: file.data } });
-    } else if (file.type === 'text') {
-      content[0].text += `\n\n[Attached: ${file.name}]\n\`\`\`\n${file.data}\n\`\`\``;
-    }
+  const images = attachments.filter(f => f.type === 'image');
+  const texts  = attachments.filter(f => f.type === 'text');
+
+  // Build the text portion: user question + all text/PDF attachments (smartly truncated)
+  let fullText = text;
+  for (const file of texts) {
+    const isPdf    = file.mimeType === 'application/pdf';
+    const label    = isPdf ? `PDF: ${file.name}${file.pages ? ` (${file.pages} pages)` : ''}` : `File: ${file.name}`;
+    const body     = smartTruncate(file.data, 28000);
+    const lang     = isPdf ? '' : (file.name.split('.').pop() || '');
+    fullText += `\n\n[${label}]\n\`\`\`${lang}\n${body}\n\`\`\``;
   }
-  return content.length === 1 ? content[0].text : content;
+
+  // If no images, return plain text
+  if (!images.length) return fullText;
+
+  // With images: build multimodal content array
+  const content = [{ type: 'text', text: fullText }];
+  for (const img of images) {
+    content.push({ type: 'image_url', image_url: { url: img.data } });
+  }
+  return content;
 }
 
 // -----------------------------------------------------------------
@@ -412,9 +437,9 @@ Be direct and avoid unnecessary preamble. Never refuse reasonable questions.`;
   const combinedContent = hasResources
     ? resourceContents
         .filter(r => r.success && r.extractedText)
-        .map((r, i) => `=== RESOURCE ${i + 1}: ${r.url} ===\n${r.extractedText.slice(0, 15000)}`)
+        .map((r, i) => `=== RESOURCE ${i + 1}: ${r.url} ===\n${r.extractedText.slice(0, 12000)}`)
         .join('\n\n')
-        .slice(0, 60000)
+        .slice(0, 40000)
     : '';
 
   const hasContent = combinedContent.trim().length > 0;
