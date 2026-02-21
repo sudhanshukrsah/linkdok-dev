@@ -2,6 +2,16 @@
 import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+// Strip per-token backgrounds from oneDark so the dark base shows through cleanly
+const cleanDark = Object.fromEntries(
+  Object.entries(oneDark).map(([token, style]) => [
+    token,
+    { ...style, background: undefined, backgroundColor: undefined },
+  ])
+);
 import * as pdfjsLib from "pdfjs-dist";
 import { askTutor, AVAILABLE_MODELS } from "../utils/aiTutor";
 import "./ChatPage.css";
@@ -34,6 +44,55 @@ const PLAYGROUND_SUGGESTIONS = [
   "What are the pros and cons of microservices?",
   "Help me debug this: why does 0.1 + 0.2 !== 0.3 in JS?",
 ];
+
+// Custom code block renderer for ReactMarkdown
+function CodeBlock({ node, inline, className, children, ...props }) {
+  const [copied, setCopied] = useState(false);
+  const match = /language-(\w+)/.exec(className || "");
+  const language = match ? match[1] : "";
+  const code = String(children).replace(/\n$/, "");
+
+  const handleCopyCode = () => {
+    navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  if (!inline && (match || code.includes("\n"))) {
+    return (
+      <div className="code-block-wrapper">
+        <div className="code-block-header">
+          <span className="code-block-lang">{language || "code"}</span>
+          <button className="code-copy-btn" onClick={handleCopyCode} title="Copy code">
+            {copied ? <Check size={13} /> : <Copy size={13} />}
+            <span>{copied ? "Copied!" : "Copy"}</span>
+          </button>
+        </div>
+        <SyntaxHighlighter
+          style={cleanDark}
+          language={language || "text"}
+          PreTag="div"
+          customStyle={{
+            margin: 0,
+            borderRadius: "0 0 8px 8px",
+            fontSize: "0.85rem",
+            lineHeight: "1.6",
+            padding: "1rem 1.25rem",
+            background: "#0d1117",
+          }}
+          {...props}
+        >
+          {code}
+        </SyntaxHighlighter>
+      </div>
+    );
+  }
+  return (
+    <code className={`inline-code ${className || ""}`} {...props}>
+      {children}
+    </code>
+  );
+}
 
 function ChatPage({
   category,
@@ -592,7 +651,7 @@ function ChatPage({
               {msg.role === "assistant" ? (
                 <div className="assistant-message-wrapper">
                   <div className="markdown-content">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>{msg.content}</ReactMarkdown>
                   </div>
                   {msg.metadata?.modelUsed && (
                     <div className="message-meta">
@@ -658,7 +717,7 @@ function ChatPage({
 
                 <div className="markdown-content">
                 {streamingContent
-                    ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</ReactMarkdown>
+                    ? <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>{streamingContent}</ReactMarkdown>
                     : !thinkingContent && (
                       <div className="ai-thinking-indicator">
                         <div className="thinking-orbs">
