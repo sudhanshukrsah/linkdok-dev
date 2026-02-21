@@ -4,6 +4,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import * as pdfjsLib from "pdfjs-dist";
+import { askTutor, AVAILABLE_MODELS } from "../utils/aiTutor";
+import { exportChatToPDF, detectPDFIntent, reformatContentForPDF } from "./ChatExportPDF";
+import "./ChatPage.css";
 
 // Strip per-token backgrounds from oneDark so the dark base shows through cleanly
 const cleanDark = Object.fromEntries(
@@ -12,9 +16,6 @@ const cleanDark = Object.fromEntries(
     { ...style, background: undefined, backgroundColor: undefined },
   ])
 );
-import * as pdfjsLib from "pdfjs-dist";
-import { askTutor, AVAILABLE_MODELS } from "../utils/aiTutor";
-import "./ChatPage.css";
 
 // Set pdfjs worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -389,6 +390,56 @@ function ChatPage({
     e?.preventDefault();
     const userText = input.trim();
     if (!userText || isLoading) return;
+
+    // --- PDF export intent detection ---
+    const pdfIntent = detectPDFIntent(userText);
+    if (pdfIntent) {
+      const allResponses = messages.filter(m => m.role === "assistant");
+      if (!allResponses.length) {
+        setInput("");
+        onUpdateMessages([...messages,
+          { role: "user", content: userText },
+          { role: "assistant", content: "Abhi koi AI response nahi hai export karne ke liye. Pehle kuch poochho!" },
+        ]);
+        return;
+      }
+      setInput("");
+      const userMsg = { role: "user", content: userText };
+
+      // Step 1 — show preparing message
+      const preparingMsg = {
+        role: "assistant",
+        content: `📄 PDF taiyar ho raha hai…\n\nAI aapki request samajh ke relevant content select aur format kar raha hai — ek moment…`,
+      };
+      onUpdateMessages([...messages, userMsg, preparingMsg]);
+
+      try {
+        // Step 2 — AI reads full conversation + user's request, selects & formats
+        const formattedContent = await reformatContentForPDF(messages, userText);
+
+        // Step 3 — generate and download PDF
+        await exportChatToPDF({
+          messages,
+          categoryName: isPlayground ? "Playground" : category?.name,
+          isPlayground,
+          formattedContent,
+        });
+
+        // Step 4 — success
+        const doneMsg = {
+          role: "assistant",
+          content: `✅ **PDF taiyar aur download ho gayi!**\n\nAI ne aapki request ke hisaab se relevant content select kiya, book-format mein structure kiya aur PDF banaya. **Downloads** folder mein dekho.`,
+        };
+        onUpdateMessages([...messages, userMsg, doneMsg]);
+
+      } catch (err) {
+        console.error("PDF export error:", err);
+        onUpdateMessages([...messages, userMsg,
+          { role: "assistant", content: "⚠️ PDF generate karne mein error aa gaya. Please dobara try karo." },
+        ]);
+      }
+      return;
+    }
 
     // --- Client-side soft rate limit: 6 messages per 60s ---
     // Gives instant feedback before the API call even goes out.
