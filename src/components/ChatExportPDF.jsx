@@ -555,7 +555,7 @@ Based on the user's request above, select the relevant content and format it as 
         ],
         model:       "stepfun-ai/step-3.5-flash",
         temperature: 0.25,
-        maxTokens:   8192,
+        maxTokens:   16384,
         stream:      false,
       }),
     });

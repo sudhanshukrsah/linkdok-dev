@@ -13,40 +13,40 @@ const OPENROUTER_ENDPOINT = '/api/chat';
 const NVIDIA_REGISTRY = {
   'kimi-k2.5': {
     model: 'moonshotai/kimi-k2.5',
-    maxTokens: 16384, topP: 1.00, temperature: 1.0,
+    maxTokens: 32768, topP: 1.00, temperature: 1.0,
     thinkingKwargs: { thinking: true },
     timeout: 180000  // 3 min — thinking needs time
   },
   'glm5': {
     model: 'z-ai/glm5',
-    maxTokens: 16384, topP: 1.00, temperature: 1.0,
+    maxTokens: 32768, topP: 1.00, temperature: 1.0,
     thinkingKwargs: { enable_thinking: true, clear_thinking: false },
     timeout: 160000  // 2.5 min
   },
   'step-flash': {
     model: 'stepfun-ai/step-3.5-flash',
-    maxTokens: 16384, topP: 0.90, temperature: 0.3,
+    maxTokens: 32768, topP: 0.90, temperature: 0.3,
     timeout: 25000
   },
   'deepseek-v3.2': {
     model: 'deepseek-ai/deepseek-v3.2',
-    maxTokens: 8192, topP: 0.95, temperature: 1.0,
+    maxTokens: 16384, topP: 0.95, temperature: 1.0,
     thinkingKwargs: { thinking: true },
     timeout: 180000  // 3 min — thinking needs time
   },
   'devstral': {
     model: 'mistralai/devstral-2-123b-instruct-2512',
-    maxTokens: 8192, topP: 0.95, temperature: 0.15,
+    maxTokens: 16384, topP: 0.95, temperature: 0.15,
     timeout: 60000
   },
   'mistral-large': {
     model: 'mistralai/mistral-large-3-675b-instruct-2512',
-    maxTokens: 4096, topP: 1.00, temperature: 0.7,
+    maxTokens: 8192, topP: 1.00, temperature: 0.7,
     timeout: 50000
   },
   'qwen3.5': {
     model: 'qwen/qwen3.5-397b-a17b',
-    maxTokens: 16384, topP: 0.95, topK: 20, temperature: 0.6,
+    maxTokens: 32768, topP: 0.95, topK: 20, temperature: 0.6,
     thinkingKwargs: { enable_thinking: true },
     timeout: 160000  // 2.5 min
   }
@@ -283,7 +283,7 @@ async function callOpenRouter(messages, signal, onChunk) {
       const response = await fetch(OPENROUTER_ENDPOINT, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model, messages, temperature: 0.3, maxTokens: 2000, stream: true }),
+        body: JSON.stringify({ model, messages, temperature: 0.3, maxTokens: 4000, stream: true }),
         signal: fallbackSignal
       });
       if (!response.ok) {
