@@ -1,0 +1,38 @@
+# ────────────────────────────────────────────────
+# robots.txt — LinkDok (https://linkdok.in)
+# ────────────────────────────────────────────────
+
+# Allow all major search engine crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Allow all others by default
+User-agent: *
+Allow: /
+
+# Disallow server-side API routes from being indexed
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://linkdok.in/sitemap.xml

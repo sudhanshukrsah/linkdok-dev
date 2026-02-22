@@ -2,36 +2,174 @@
 <html lang="en">
   <head>
     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-2WFN8ZF5LV"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-2WFN8ZF5LV"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-2WFN8ZF5LV');
+    </script>
 
-  gtag('config', 'G-2WFN8ZF5LV');
-</script>
+    <!-- ═══════════════════════════════════════
+         CORE META
+    ═══════════════════════════════════════ -->
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href="https://linkdok.in/" />
 
-    <title>LinkDok — AI-Powered Link Intelligence</title>
-    <meta name="description" content="LinkDok is an AI-powered link intelligence platform. Save, organise, and deeply understand any webpage with the help of powerful AI models." />
+    <!-- ── Fonts ── -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- ═══════════════════════════════════════
+         SEO — Title & Description
+    ═══════════════════════════════════════ -->
+    <title>LinkDok — Free AI Bookmark Manager | Chat With Your Links Using Kimi, DeepSeek & Mistral</title>
+    <meta name="description" content="LinkDok lets you save links, organise them into categories, and chat with an AI that actually reads those pages. Use premium AI models — Kimi K2.5, DeepSeek V3, Mistral Large — for free. No signup required." />
+
+    <!-- ── Extended keywords ── -->
+    <meta name="keywords" content="AI bookmark manager, chat with your links, free AI chat no signup, smart bookmark organizer, save links ask AI questions, AI study tool for students, free ChatGPT alternative, premium AI models free, Kimi K2.5 free, DeepSeek free online, Mistral Large free, NVIDIA NIM AI, AI link organizer, bookmark AI assistant, AI reading assistant, AI research tool, free AI playground, chat with saved articles, AI tutor for students, organize links with AI, ask questions about websites, free AI no login, best free AI 2026, LinkDok, linkdok.in" />
+
+    <!-- ── Other meta ── -->
+    <meta name="author" content="Sudhanshu Kumar — LinkDok" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
     <meta name="theme-color" content="#080b12" />
+    <meta name="application-name" content="LinkDok" />
+    <meta name="generator" content="React 19 + Vite 7" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="rating" content="general" />
 
-    <!-- Open Graph / Social sharing -->
+    <!-- ═══════════════════════════════════════
+         OPEN GRAPH — Facebook / LinkedIn / WhatsApp
+    ═══════════════════════════════════════ -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="LinkDok — AI-Powered Link Intelligence" />
-    <meta property="og:description" content="Save, organise, and deeply understand any webpage with AI-powered link intelligence." />
-    <meta property="og:image" content="/AI-Powered-Link-Intelligence.png" />
+    <meta property="og:site_name" content="LinkDok" />
+    <meta property="og:url" content="https://linkdok.in/" />
+    <meta property="og:title" content="LinkDok — Chat With Your Links Using Free Premium AI Models" />
+    <meta property="og:description" content="Save any URL, organise into categories, and ask AI questions about the actual content. Powered by Kimi K2.5, DeepSeek V3, Mistral, Devstral & more — completely free, no signup." />
+    <meta property="og:image" content="https://linkdok.in/AI-Powered-Link-Intelligence.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="LinkDok — AI Bookmark Manager with free premium AI models" />
+    <meta property="og:locale" content="en_US" />
 
-    <!-- Twitter Card -->
+    <!-- ═══════════════════════════════════════
+         TWITTER / X CARD
+    ═══════════════════════════════════════ -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="LinkDok — AI-Powered Link Intelligence" />
-    <meta name="twitter:description" content="Save, organise, and deeply understand any webpage with AI-powered link intelligence." />
-    <meta name="twitter:image" content="/AI-Powered-Link-Intelligence.png" />
+    <meta name="twitter:site" content="@linkdok_in" />
+    <meta name="twitter:creator" content="@linkdok_in" />
+    <meta name="twitter:title" content="LinkDok — Free AI That Reads Your Saved Links (No Signup)" />
+    <meta name="twitter:description" content="Chat with Kimi K2.5, DeepSeek V3, Mistral Large & more for free. Save links → ask AI questions about them. Your AI-powered bookmark manager." />
+    <meta name="twitter:image" content="https://linkdok.in/AI-Powered-Link-Intelligence.png" />
+    <meta name="twitter:image:alt" content="LinkDok AI bookmark manager screenshot" />
+
+    <!-- ═══════════════════════════════════════
+         STRUCTURED DATA — JSON-LD (Google Rich Results)
+    ═══════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "LinkDok",
+      "url": "https://linkdok.in",
+      "description": "LinkDok is a free AI-powered bookmark manager. Save links, organise them into categories, and chat with advanced AI models — Kimi K2.5, DeepSeek V3, Mistral Large, Devstral — that actually read your saved pages. No signup required.",
+      "applicationCategory": "ProductivityApplication",
+      "operatingSystem": "Web",
+      "browserRequirements": "Requires a modern browser with JavaScript enabled",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "featureList": [
+        "AI bookmark management",
+        "Chat with saved links using AI",
+        "Free access to Kimi K2.5 reasoning model",
+        "Free access to DeepSeek V3 AI",
+        "Free access to Mistral Large",
+        "Free access to Devstral code model",
+        "AI Playground — free chat with no signup",
+        "Smart link organizer with categories",
+        "No account required",
+        "100% local storage — private by default"
+      ],
+      "screenshot": "https://linkdok.in/AI-Powered-Link-Intelligence.png",
+      "author": {
+        "@type": "Person",
+        "name": "Sudhanshu Kumar",
+        "url": "https://www.linkedin.com/in/sudhanshu-kumar-info/",
+        "affiliation": "IIT Patna"
+      },
+      "creator": {
+        "@type": "Person",
+        "name": "Sudhanshu Kumar",
+        "url": "https://www.linkedin.com/in/sudhanshu-kumar-info/"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5",
+        "ratingCount": "1"
+      },
+      "potentialAction": {
+        "@type": "UseAction",
+        "target": "https://linkdok.in"
+      }
+    }
+    </script>
+
+    <!-- FAQ Structured Data for Google -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is LinkDok free to use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. LinkDok is completely free with no signup required. You get access to 8 premium AI models including Kimi K2.5, DeepSeek V3, Mistral Large, and Devstral at no cost."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I chat with my saved links using AI?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Save your links into a category on LinkDok, open the AI chat for that category, and ask any question. The AI reads the actual content of your saved pages and answers based on them."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which AI models does LinkDok use?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "LinkDok uses 8 AI models via NVIDIA NIM: Kimi K2.5, Step Flash, Devstral, DeepSeek V3.2, Mistral Large, Qwen 3.5, GLM5, and an Auto routing mode. All are free."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to create an account?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. LinkDok requires no signup, login, or email. All your data is stored locally in your browser."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the AI Playground in LinkDok?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The AI Playground at linkdok.in/playground is a free chat interface — like ChatGPT but completely free. You can chat with any of the 8 premium AI models without needing saved links."
+          }
+        }
+      ]
+    }
+    </script>
   </head>
   <body>
     <div id="root"></div>
