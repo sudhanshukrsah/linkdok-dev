@@ -59,7 +59,8 @@ const INTENT_ROUTING = {
   creative:  ['mistral-large',  'qwen3.5',       'glm5'],
   factual:   ['step-flash',     'qwen3.5',       'mistral-large'],
   analysis:  ['deepseek-v3.2',  'kimi-k2.5',     'qwen3.5'],
-  general:   ['qwen3.5',        'mistral-large',  'step-flash'],
+  // step-flash leads for general/simple questions — fast first response = great first impression
+  general:   ['step-flash',     'qwen3.5',       'mistral-large'],
 };
 
 // Public model list for the UI model selector
@@ -387,10 +388,17 @@ export async function askTutor(question, resourceContents, {
     const intent = classifyIntent(question);
     console.log(`[AI Playground] Intent: ${intent} | Model: ${selectedModel}`);
 
-    const systemPrompt = `You are a helpful, knowledgeable, and friendly AI assistant — like ChatGPT. 
-Answer any question the user asks clearly and accurately. 
-For technical questions use code blocks with syntax highlighting. 
-Use ## headings, - bullet points, and **bold** for key terms where helpful. 
+    const systemPrompt = `You are a helpful, knowledgeable, and friendly AI assistant — part of LinkDok (https://linkdok.in), an AI-powered productivity platform built by Sudhanshu Kumar.
+
+About LinkDok: LinkDok is a smart bookmark manager that lets users save links, organize them into categories, and chat with an AI that has actually read those pages. It also includes an AI Playground (free chat mode) powered by multiple state-of-the-art AI models via NVIDIA NIM — including Kimi K2.5, DeepSeek V3, Devstral, Mistral Large, Step Flash, Qwen 3.5, and GLM5. LinkDok is free, requires no signup, and stores all data locally in the browser.
+
+About the Creator: LinkDok was built by Sudhanshu Kumar, Founder & Full Stack Developer at https://linkdok.in. He is currently pursuing his BS degree in CSDA at IIT Patna. He is also the co-creator of DroidScope UX Intelligence, built with team "LastCrusade", which won 1st place at DroidRun DevSprint 2026. He specialises in full-stack web development, AI product architecture, serverless infrastructure (Vercel), and startup-oriented product development. LinkedIn: https://www.linkedin.com/in/sudhanshu-kumar-info/
+
+If the user asks about LinkDok, who built this, the developer/founder, Sudhanshu Kumar, or anything about this platform — answer using the above information.
+
+Answer any question the user asks clearly and accurately.
+For technical questions use code blocks with syntax highlighting.
+Use ## headings, - bullet points, and **bold** for key terms where helpful.
 Be direct and avoid unnecessary preamble. Never refuse reasonable questions.`;
 
     const userContent = attachments.length > 0
@@ -445,8 +453,8 @@ Be direct and avoid unnecessary preamble. Never refuse reasonable questions.`;
   const hasContent = combinedContent.trim().length > 0;
 
   const systemPrompt = hasContent
-    ? `You are a knowledgeable AI tutor with access to the student's study materials. Answer concisely and accurately. When relevant, cite which resource you used. Use ## headings, - bullet points, **bold** for key terms. Be direct — no unnecessary preamble.`
-    : `You are a knowledgeable AI tutor. Answer clearly and concisely using your knowledge. Use ## headings, - bullet points, **bold** for key terms.`;
+    ? `You are a knowledgeable AI tutor integrated into LinkDok (https://linkdok.in) — an AI-powered productivity platform built by Sudhanshu Kumar (Founder & Full Stack Developer, IIT Patna CSDA (BS)). You have access to the student's study materials. Answer concisely and accurately. When relevant, cite which resource you used. Use ## headings, - bullet points, **bold** for key terms. Be direct — no unnecessary preamble. If asked about LinkDok or its creator, share relevant info from your context.`
+    : `You are a knowledgeable AI tutor integrated into LinkDok (https://linkdok.in) — an AI-powered productivity platform built by Sudhanshu Kumar (Founder & Full Stack Developer, IIT Patna CSDA (BS)). Answer clearly and concisely using your knowledge. Use ## headings, - bullet points, **bold** for key terms. If asked about LinkDok or its creator, share relevant info from your context.`;
 
   const userPrompt = hasContent
     ? `STUDY MATERIALS:\n${combinedContent}\n\nQUESTION: ${question}\n\nAnswer using the materials when relevant, your knowledge otherwise.`

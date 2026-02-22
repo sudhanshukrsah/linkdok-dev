@@ -264,9 +264,9 @@ function IntroLanding({ onComplete, categories, onAddCategory, onAddLink, isDark
                 </div>
               </div>
 
-              {/* Chat card – view only, animated typing placeholder */}
+              {/* Chat card – click to open Playground */}
               <div className="il-row il-row--bottom">
-                <div className="il-card il-card--chat">
+                <div className="il-card il-card--chat" onClick={() => window.location.href = '/playground'} style={{ cursor: 'pointer' }}>
                   <p className="il-chat-title">Ask Anything From Your Links</p>
                   <div className="il-chat-input-wrap">
                     <button className="il-chat-plus" disabled aria-label="Add link" style={{ opacity: 0.4, cursor: 'default' }}>
