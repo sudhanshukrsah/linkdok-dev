@@ -30,18 +30,18 @@ const NVIDIA_REGISTRY = {
   },
   'deepseek-v3.2': {
     model: 'deepseek-ai/deepseek-v3.2',
-    maxTokens: 16384, topP: 0.95, temperature: 1.0,
+    maxTokens: 32768, topP: 0.95, temperature: 1.0,
     thinkingKwargs: { thinking: true },
     timeout: 180000  // 3 min — thinking needs time
   },
   'devstral': {
     model: 'mistralai/devstral-2-123b-instruct-2512',
-    maxTokens: 16384, topP: 0.95, temperature: 0.15,
+    maxTokens: 32768, topP: 0.95, temperature: 0.15,
     timeout: 60000
   },
   'mistral-large': {
     model: 'mistralai/mistral-large-3-675b-instruct-2512',
-    maxTokens: 8192, topP: 1.00, temperature: 0.7,
+    maxTokens: 32768, topP: 1.00, temperature: 0.7,
     timeout: 50000
   },
   'qwen3.5': {
