@@ -38,11 +38,11 @@
     /* ── CSS Variables ── */
     :root {
       --bg:         #080b12;
-      --bg2:        #0f1420;
-      --bg3:        #161c2e;
-      --card:       rgba(22,28,46,0.82);
-      --border:     rgba(255,255,255,0.07);
-      --border2:    rgba(255,255,255,0.12);
+      --bg2:        #101010;
+      --bg3:        #1a1a1a;
+      --card:       rgba(26,26,26,0.95);
+      --border:     rgba(255,255,255,0.08);
+      --border2:    #2a2a2a;
       --txt:        #e8e8f0;
       --txt2:       #8892a4;
       --txt3:       #5a6478;
@@ -96,8 +96,8 @@
       top: 0;
       height: 100vh;
       overflow-y: auto;
-      background: rgba(10,12,20,0.92);
-      border-right: 1px solid var(--border);
+      background: rgba(16,16,16,0.97);
+      border-right: 1px solid #2a2a2a;
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       display: flex;
@@ -374,7 +374,7 @@
     /* ── Table ── */
     .table-wrap { overflow-x: auto; margin-bottom: 1rem; border-radius: 10px; border: 1px solid var(--border); }
     table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    thead tr { background: rgba(59,130,246,0.08); }
+    thead tr { background: rgba(255,255,255,0.04); }
     th { padding: 0.7rem 1rem; text-align: left; font-weight: 600; color: var(--txt); border-bottom: 1px solid var(--border); white-space: nowrap; }
     td { padding: 0.65rem 1rem; color: var(--txt2); border-bottom: 1px solid var(--border); vertical-align: top; }
     tr:last-child td { border-bottom: none; }

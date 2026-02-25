@@ -205,28 +205,58 @@ function IntroLanding({ onComplete, categories, onAddCategory, onAddLink, isDark
           </div>
         </header>
 
+        {/* Hero Section */}
+        <section className="il-hero">
+
+          <div className="il-hero-grid" aria-hidden="true" />
+
+          <p className="il-hero-pre">
+            <span className="il-hero-pre-line" />
+            One place to
+            <span className="il-hero-pre-line" />
+          </p>
+
+          <div className="il-hero-word-wrap" aria-label="Save. Read. Learn. Chat.">
+            <span className="il-hero-word il-hero-word--1">Save.</span>
+            <span className="il-hero-word il-hero-word--2">Read.</span>
+            <span className="il-hero-word il-hero-word--3">Learn.</span>
+            <span className="il-hero-word il-hero-word--4">Chat.</span>
+          </div>
+
+          <p className="il-hero-sub">
+            Paste any URL — articles, docs, videos, threads.<br />
+            Ask questions, get summaries &amp; extract insights with AI.
+          </p>
+
+          <div className="il-hero-actions">
+            <button className="il-hero-btn-primary" onClick={handleGetStarted}>
+              Get Started
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+            <button className="il-hero-btn-ghost" onClick={() => window.open('/help.html', '_blank')}>
+              See how it works
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+              </svg>
+            </button>
+          </div>
+
+        </section>
+        <div className="il-hero-divider" aria-hidden="true" />
+
         {/* Cards grid */}
         <main className="il-main">
 
-          {/* Two-column layout: left = desc+models+chat | right = easy card */}
+          {/* Two-column layout: left = models+chat | right = easy card */}
           <div className="il-grid">
 
             {/* LEFT COLUMN */}
             <div className="il-col-left">
 
-              {/* Top row: desc + models side by side */}
+              {/* Top row: models */}
               <div className="il-row il-row--top">
-                {/* Card: description */}
-                <div className="il-card il-card--desc">
-                  <p className="il-desc-text">
-                    An AI-powered tool<br />
-                    to save links and chat
-                    with them intelligently.
-                  </p>
-                  <button className="il-add-link-btn" onClick={() => setIsAddLinkModalOpen(true)}>
-                    Add Your Link
-                  </button>
-                </div>
 
                 {/* Card: models */}
                 <div className="il-card il-card--models">
@@ -234,39 +264,44 @@ function IntroLanding({ onComplete, categories, onAddCategory, onAddLink, isDark
                     Most Advance<br />
                     Models in Your Chat
                   </p>
-                  <div className="il-ticker-wrap">
-                    <div className="il-ticker">
-                      {/* Duplicated for seamless loop */}
-                      {[
-                        { name: 'Kimi K2.5',      color: '#3b82f6' },
-                        { name: 'Step Flash',      color: '#10b981' },
-                        { name: 'Devstral',        color: '#f97316' },
-                        { name: 'DeepSeek V3.2',   color: '#8b5cf6' },
-                        { name: 'Mistral Large',   color: '#f59e0b' },
-                        { name: 'Qwen 3.5',        color: '#ec4899' },
-                        { name: 'GLM5',            color: '#06b6d4' },
-                        { name: 'Kimi K2.5',       color: '#3b82f6' },
-                        { name: 'Step Flash',      color: '#10b981' },
-                        { name: 'Devstral',        color: '#f97316' },
-                        { name: 'DeepSeek V3.2',   color: '#8b5cf6' },
-                        { name: 'Mistral Large',   color: '#f59e0b' },
-                        { name: 'Qwen 3.5',        color: '#ec4899' },
-                        { name: 'GLM5',            color: '#06b6d4' },
-                      ].map((m, i) => (
-                        <div key={i} className="il-ticker-row">
-                          <span className="il-ticker-dot" style={{ background: m.color }} />
-                          <span className="il-ticker-name">{m.name}</span>
-                          <span className="il-ticker-pill" style={{ color: m.color, borderColor: m.color }}>AI</span>
-                        </div>
-                      ))}
+
+                  {[{
+                    dir: 'left',
+                    items: [
+                      { name: 'Kimi K2.5',     color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.3)'  },
+                      { name: 'Devstral',      color: '#f97316', bg: 'rgba(249,115,22,0.13)',  bd: 'rgba(249,115,22,0.3)'  },
+                      { name: 'GLM5',          color: '#06b6d4', bg: 'rgba(6,182,212,0.13)',   bd: 'rgba(6,182,212,0.3)'   },
+                      { name: 'DeepSeek V3.2', color: '#8b5cf6', bg: 'rgba(139,92,246,0.13)',  bd: 'rgba(139,92,246,0.3)'  },
+                    ],
+                  }, {
+                    dir: 'right',
+                    items: [
+                      { name: 'Mistral Large', color: '#f59e0b', bg: 'rgba(245,158,11,0.13)',  bd: 'rgba(245,158,11,0.3)'  },
+                      { name: 'Qwen 3.5',      color: '#ec4899', bg: 'rgba(236,72,153,0.13)',  bd: 'rgba(236,72,153,0.3)'  },
+                      { name: 'Step Flash',    color: '#10b981', bg: 'rgba(16,185,129,0.13)',  bd: 'rgba(16,185,129,0.3)'  },
+                      { name: 'Kimi K2.5',     color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.3)'  },
+                    ],
+                  }].map(({ dir, items }) => (
+                    <div key={dir} className="il-mq-track">
+                      <div className={`il-mq il-mq--${dir}`}>
+                        {/* Four copies: belt = 4× set-width, -50% = 2× set-width → seamless */}
+                        {[...items, ...items, ...items, ...items].map((m, i) => (
+                          <span key={i} className="il-mpill"
+                            style={{ '--mc': m.color, '--mc-bg': m.bg, '--mc-bd': m.bd }}>
+                            <span className="il-mpill-dot" style={{ background: m.color }} />
+                            {m.name}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  ))}
+
                 </div>
               </div>
 
               {/* Chat card – click to open Playground */}
               <div className="il-row il-row--bottom">
-                <div className="il-card il-card--chat" onClick={() => window.location.href = '/playground'} style={{ cursor: 'pointer' }}>
+                <div className="il-card il-card--chat">
                   <p className="il-chat-title">Ask Anything From Your Links</p>
                   <div className="il-chat-input-wrap">
                     <button className="il-chat-plus" disabled aria-label="Add link" style={{ opacity: 0.4, cursor: 'default' }}>
