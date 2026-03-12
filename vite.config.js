@@ -9,6 +9,15 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     build: {
       chunkSizeWarningLimit: 1500, // pdfjs-dist worker is ~1MB — expected
+      ...(mode === 'production' && {
+        // Strip all console.* and debugger statements from production bundle
+        minify: 'esbuild',
+      }),
+    },
+    esbuild: {
+      // In production: drop console logs and debugger statements entirely
+      // In development: keep everything so you can see all logs in VS Code / browser devtools
+      drop: mode === 'production' ? ['console', 'debugger'] : [],
     },
     server: {
       proxy: {
