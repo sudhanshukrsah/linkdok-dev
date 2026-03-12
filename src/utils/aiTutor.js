@@ -63,6 +63,10 @@ const INTENT_ROUTING = {
   general:   ['step-flash',     'qwen3.5',       'mistral-large'],
 };
 
+// Vision/multimodal routing: when user attaches an image or PDF,
+// mistral-large goes first (fast + reliable), then other capable models as fallback.
+const VISION_MODELS = ['mistral-large', 'qwen3.5', 'step-flash', 'deepseek-v3.2'];
+
 // Public model list for the UI model selector
 export const AVAILABLE_MODELS = [
   { id: 'auto',          label: 'Auto',           description: 'Smart routing — best model per question', abbr: '✦',  color: '#3b82f6', supportsThinking: true  },
@@ -238,11 +242,16 @@ async function callNvidiaModel(messages, modelKey, useThinking, signal, onChunk,
   return content;
 }
 
-async function callNvidia(messages, question, intent, selectedModel, signal, onChunk, thinkingMode = 'auto', onThinkingChunk) {
+async function callNvidia(messages, question, intent, selectedModel, signal, onChunk, thinkingMode = 'auto', onThinkingChunk, hasVisionContent = false) {
   const isCustom = selectedModel && selectedModel !== 'auto';
-  const priorityList = isCustom
-    ? [selectedModel, ...(INTENT_ROUTING[intent] ?? INTENT_ROUTING.general).filter(m => m !== selectedModel)]
+  // When a vision attachment is present and the user hasn't manually chosen a model,
+  // use the dedicated VISION_MODELS list so mistral-large answers first (fastest for vision).
+  const baseList = (hasVisionContent && !isCustom)
+    ? VISION_MODELS
     : (INTENT_ROUTING[intent] ?? INTENT_ROUTING.general);
+  const priorityList = isCustom
+    ? [selectedModel, ...baseList.filter(m => m !== selectedModel)]
+    : baseList;
 
   let lastError;
   for (const modelKey of priorityList) {
@@ -313,9 +322,9 @@ async function callOpenRouter(messages, signal, onChunk) {
 // -----------------------------------------------------------------
 // Orchestrator
 // -----------------------------------------------------------------
-async function callAI(messages, question, intent, selectedModel, signal, onChunk, thinkingMode = 'auto', onThinkingChunk) {
+async function callAI(messages, question, intent, selectedModel, signal, onChunk, thinkingMode = 'auto', onThinkingChunk, hasVisionContent = false) {
   try {
-    return await callNvidia(messages, question, intent, selectedModel, signal, onChunk, thinkingMode, onThinkingChunk);
+    return await callNvidia(messages, question, intent, selectedModel, signal, onChunk, thinkingMode, onThinkingChunk, hasVisionContent);
   } catch (err) {
     if (err.name === 'AbortError') throw err;
     if (err.rateLimited) throw err; // propagate — same IP blocked on OpenRouter too
@@ -383,10 +392,18 @@ export async function askTutor(question, resourceContents, {
     return { answer: 'Please ask a valid question.', basedOnResources: false };
   }
 
+  // Detect whether the user has attached any image or PDF — used to override routing
+  const hasVisionContent = attachments.some(
+    a => a.type === 'image' || a.mimeType === 'application/pdf'
+  );
+  if (hasVisionContent) {
+    console.log('[AI Tutor] Vision/PDF attachment detected — using mistral-large first routing');
+  }
+
   // ── Playground (free chat) mode ──────────────────────────────────
   if (playground) {
     const intent = classifyIntent(question);
-    console.log(`[AI Playground] Intent: ${intent} | Model: ${selectedModel}`);
+    console.log(`[AI Playground] Intent: ${intent} | Model: ${selectedModel}${hasVisionContent ? ' | vision-routing' : ''}`);
 
     const systemPrompt = `You are a helpful, knowledgeable, and friendly AI assistant — part of LinkDok (https://linkdok.in), an AI-powered productivity platform built by Sudhanshu Kumar.
 
@@ -412,7 +429,7 @@ Be direct and avoid unnecessary preamble. Never refuse reasonable questions.`;
     ];
 
     try {
-      const result = await callAI(messages, question, intent, selectedModel, signal, onChunk, thinkingMode, onThinkingChunk);
+      const result = await callAI(messages, question, intent, selectedModel, signal, onChunk, thinkingMode, onThinkingChunk, hasVisionContent);
       return {
         answer: result.content,
         basedOnResources: false,
@@ -469,7 +486,7 @@ Be direct and avoid unnecessary preamble. Never refuse reasonable questions.`;
   ];
 
   try {
-    const result = await callAI(messages, question, intent, selectedModel, signal, onChunk, thinkingMode, onThinkingChunk);
+    const result = await callAI(messages, question, intent, selectedModel, signal, onChunk, thinkingMode, onThinkingChunk, hasVisionContent);
     return {
       answer: result.content,
       basedOnResources: hasContent,

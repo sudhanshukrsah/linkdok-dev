@@ -1,0 +1,113 @@
+
+/* DESKTOP ONLY NEW SECTIONS */
+@media (max-width: 767px) {
+  .il-desktop-extra-sections {
+    display: none !important;
+  }
+}
+
+.il-desktop-extra-sections {
+  width: 100%;
+  margin-top: 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.il-extra-section {
+  display: flex;
+  align-items: center;
+  gap: 3rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 3rem;
+}
+
+.il-extra-section:nth-child(even) {
+  flex-direction: row-reverse;
+}
+
+.il-extra-content {
+  flex: 1;
+}
+
+.il-extra-title {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #e8e8f0;
+  margin-bottom: 1rem;
+}
+
+.il-extra-text {
+  font-size: 1.1rem;
+  color: #a0a0b0;
+  line-height: 1.6;
+  margin-bottom: 2rem;
+}
+
+.il-extra-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.il-extra-list-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #c0c0d0;
+  font-size: 1.05rem;
+}
+
+.il-extra-list-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+}
+
+.il-extra-visual {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.il-extra-visual-placeholder {
+  width: 100%;
+  aspect-ratio: 4/3;
+  background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(139,92,246,0.1));
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  overflow: hidden;
+  position: relative;
+}
+
+.il-extra-visual-icon {
+  width: 80px;
+  height: 80px;
+  color: rgba(255,255,255,0.2);
+}
+
+.il-glow-circle {
+  position: absolute;
+  width: 200px;
+  height: 200px;
+  background: rgba(59, 130, 246, 0.4);
+  filter: blur(80px);
+  border-radius: 50%;
+}
+
