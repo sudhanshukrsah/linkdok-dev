@@ -143,6 +143,13 @@ function IntroLanding({ onComplete, categories, onAddCategory, onAddLink, isDark
         ))}
       </div>
 
+      {/* Background ambient orbs */}
+      <div className="il-orbs" aria-hidden="true">
+        <div className="il-orb il-orb--1" />
+        <div className="il-orb il-orb--2" />
+        <div className="il-orb il-orb--3" />
+      </div>
+
       {/* Page wrapper */}
       <div className="il-page">
 
@@ -230,7 +237,7 @@ function IntroLanding({ onComplete, categories, onAddCategory, onAddLink, isDark
 
           <div className="il-hero-actions">
             <button className="il-hero-btn-primary" onClick={handleGetStarted}>
-              Get Started
+              Get Started Free
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
               </svg>
