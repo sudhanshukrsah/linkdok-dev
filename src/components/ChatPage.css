@@ -8,6 +8,10 @@
   position: relative;
 }
 
+.chat-page.drag-active {
+  user-select: none;
+}
+
 .chat-page-header {
   display: flex;
   align-items: center;
@@ -676,8 +680,28 @@ body.light-mode .thinking-bubble-body   { color: #6b7280; }
 /* Chat Input */
 .chat-input-container {
   padding: 1rem 1.5rem;
-  
+  position: relative;
   flex-shrink: 0;
+}
+
+.drag-drop-overlay {
+  position: absolute;
+  inset: 0.4rem 0.8rem 0.4rem;
+  border: 2px dashed var(--accent);
+  border-radius: 14px;
+  background: rgba(59, 130, 246, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 30;
+  pointer-events: none;
+}
+
+.drag-drop-overlay-content {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.01em;
 }
 
 .chat-input-form {
@@ -708,6 +732,43 @@ body.light-mode .thinking-bubble-body   { color: #6b7280; }
 .attach-btn:hover {
   color: var(--text-primary);
   background-color: var(--bg-tertiary);
+}
+
+.voice-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.voice-btn:hover:not(:disabled) {
+  color: var(--text-primary);
+  background-color: var(--bg-tertiary);
+}
+
+.voice-btn.listening {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);
+  animation: voicePulse 1.3s ease-in-out infinite;
+}
+
+.voice-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+@keyframes voicePulse {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.12); }
+  50%      { box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.2); }
 }
 
 .chat-input {
@@ -909,6 +970,7 @@ body.light-mode .thinking-bubble-body   { color: #6b7280; }
   }
 
   .attach-btn,
+  .voice-btn,
   .send-btn {
     width: 30px;
     height: 30px;
@@ -1343,6 +1405,13 @@ body.light-mode .think-pill-off   { color: #dc2626; border-color: rgba(220,38,38
   margin: 0.25rem 1rem 0;
   font-size: 0.75rem;
   color: #ef4444;
+}
+
+.voice-interim {
+  margin: 0.25rem 1rem 0;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  opacity: 0.85;
 }
 
 .ai-disclaimer {

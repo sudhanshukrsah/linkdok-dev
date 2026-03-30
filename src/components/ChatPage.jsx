@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle } from "lucide-react";
+import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle, Mic, MicOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -117,6 +117,10 @@ function ChatPage({
   const [selectedModel, setSelectedModel]     = useState("auto");
   const [modelDropOpen, setModelDropOpen]     = useState(false);
   const [attachError, setAttachError]         = useState("");
+  const [voiceError, setVoiceError]           = useState("");
+  const [voiceInterim, setVoiceInterim]       = useState("");
+  const [isListening, setIsListening]         = useState(false);
+  const [isDragActive, setIsDragActive]       = useState(false);
   const [rateLimitMsg, setRateLimitMsg]       = useState("");
   const [thinkingMode, setThinkingMode]       = useState("auto"); // 'auto' | 'on' | 'off'
   const [thinkingContent, setThinkingContent] = useState("");     // live reasoning tokens
@@ -133,6 +137,8 @@ function ChatPage({
   const clientHitsRef     = useRef([]);     // timestamps for client-side soft rate limit
   const userStoppedRef    = useRef(false);  // distinguish user-stop from timeout
   const thinkingAccumRef  = useRef("");     // accumulates reasoning_content tokens
+  const speechRecRef      = useRef(null);
+  const dragDepthRef      = useRef(0);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
   // Smart scroll: only auto-scroll if user is already near the bottom
@@ -178,7 +184,18 @@ function ChatPage({
     setInput("");
     setAttachments([]);
     setAttachError("");
+    setVoiceError("");
+    setVoiceInterim("");
   }, [category.id]);
+
+  // Cleanup transient controllers
+  useEffect(() => {
+    return () => {
+      clearTimeout(rateLimitTimerRef.current);
+      speechRecRef.current?.stop?.();
+      cancelAnimationFrame(streamFrameRef.current);
+    };
+  }, []);
 
   // Close model dropdown on outside click
   useEffect(() => {
@@ -234,15 +251,20 @@ function ChatPage({
     return { text: fullText, pages: pdf.numPages };
   };
 
-  const handleFileSelect = async (e) => {
+  const processIncomingFiles = useCallback(async (files) => {
     setAttachError("");
-    const files = Array.from(e.target.files || []);
-    e.target.value = "";
+    if (!files.length) return;
+    let imageCount = attachments.filter(a => a.type === "image").length;
+    const queuedKeys = new Set(
+      attachments.map(a => `${a.name || "file"}::${a.mimeType || ""}::${a.size ?? -1}`)
+    );
 
     for (const file of files) {
+      const fileKey = `${file.name || "file"}::${file.type || ""}::${file.size}`;
+      if (queuedKeys.has(fileKey)) continue;
+
       if (IMAGE_TYPES.includes(file.type)) {
-        const currentImages = attachments.filter(a => a.type === "image").length;
-        if (currentImages >= MAX_IMAGES) {
+        if (imageCount >= MAX_IMAGES) {
           setAttachError(`Max ${MAX_IMAGES} images per message`);
           continue;
         }
@@ -251,7 +273,9 @@ function ChatPage({
           continue;
         }
         const data = await readAsDataURL(file);
-        setAttachments(prev => [...prev, { name: file.name, type: "image", data, mimeType: file.type, preview: data }]);
+        setAttachments(prev => [...prev, { name: file.name, type: "image", data, mimeType: file.type, preview: data, size: file.size }]);
+        queuedKeys.add(fileKey);
+        imageCount += 1;
 
       } else if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
         if (file.size > MAX_PDF_BYTES) {
@@ -271,8 +295,10 @@ function ChatPage({
             type: "text",
             data: text,
             mimeType: "application/pdf",
-            pages
+            pages,
+            size: file.size
           }]);
+          queuedKeys.add(fileKey);
         } catch (err) {
           setAttachError(`${file.name}: failed to read PDF — ${err.message}`);
         }
@@ -283,11 +309,135 @@ function ChatPage({
           continue;
         }
         const data = await readAsText(file);
-        setAttachments(prev => [...prev, { name: file.name, type: "text", data, mimeType: file.type }]);
+        setAttachments(prev => [...prev, { name: file.name, type: "text", data, mimeType: file.type, size: file.size }]);
+        queuedKeys.add(fileKey);
       } else {
         setAttachError(`${file.name}: unsupported file type`);
       }
     }
+  }, [attachments]);
+
+  const handleFileSelect = async (e) => {
+    const files = Array.from(e.target.files || []);
+    e.target.value = "";
+    await processIncomingFiles(files);
+  };
+
+  const handleInputPaste = async (e) => {
+    const fromFiles = Array.from(e.clipboardData?.files || []);
+    const fromItems = Array.from(e.clipboardData?.items || [])
+      .filter(item => item.kind === "file")
+      .map(item => item.getAsFile())
+      .filter(Boolean);
+    // Prefer one clipboard source only. In many browsers `items` and `files`
+    // contain the same image, which causes duplicate attachments.
+    const files = fromItems.length ? fromItems : fromFiles;
+    if (!files.length) return;
+    e.preventDefault();
+    await processIncomingFiles(files);
+  };
+
+  const hasDraggedFiles = (event) => Array.from(event.dataTransfer?.types || []).includes("Files");
+
+  const handleDragEnter = (e) => {
+    if (!hasDraggedFiles(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current += 1;
+    setIsDragActive(true);
+  };
+
+  const handleDragOver = (e) => {
+    if (!hasDraggedFiles(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = "copy";
+    setIsDragActive(true);
+  };
+
+  const handleDragLeave = (e) => {
+    if (!hasDraggedFiles(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current = Math.max(0, dragDepthRef.current - 1);
+    if (dragDepthRef.current === 0) setIsDragActive(false);
+  };
+
+  const handleDrop = async (e) => {
+    if (!hasDraggedFiles(e)) return;
+    e.preventDefault();
+    e.stopPropagation();
+    dragDepthRef.current = 0;
+    setIsDragActive(false);
+    const files = Array.from(e.dataTransfer?.files || []);
+    await processIncomingFiles(files);
+  };
+
+  const isSpeechRecognitionSupported = () =>
+    typeof window !== "undefined" && ("SpeechRecognition" in window || "webkitSpeechRecognition" in window);
+
+  const stopVoiceInput = useCallback(() => {
+    speechRecRef.current?.stop?.();
+  }, []);
+
+  const handleVoiceInput = () => {
+    if (isListening) {
+      stopVoiceInput();
+      return;
+    }
+    if (!isSpeechRecognitionSupported()) {
+      setVoiceError("Voice input is not supported in this browser.");
+      return;
+    }
+
+    setVoiceError("");
+    setVoiceInterim("");
+    const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognizer = new SpeechRecognitionClass();
+    speechRecRef.current = recognizer;
+    recognizer.lang = "en-IN";
+    recognizer.continuous = true;
+    recognizer.interimResults = true;
+    recognizer.maxAlternatives = 1;
+
+    recognizer.onstart = () => setIsListening(true);
+
+    recognizer.onresult = (event) => {
+      let finalText = "";
+      let interimText = "";
+      for (let i = event.resultIndex; i < event.results.length; i += 1) {
+        const chunk = event.results[i][0]?.transcript || "";
+        if (event.results[i].isFinal) finalText += chunk;
+        else interimText += chunk;
+      }
+
+      if (finalText.trim()) {
+        const normalized = finalText.trim();
+        setInput(prev => prev ? `${prev.trimEnd()} ${normalized}` : normalized);
+        setSelectedModel("auto");
+      }
+      setVoiceInterim(interimText.trim());
+    };
+
+    recognizer.onerror = (event) => {
+      if (event.error !== "aborted") {
+        const map = {
+          "not-allowed": "Mic permission denied. Please allow microphone access.",
+          "no-speech": "No speech detected. Please speak again.",
+          "audio-capture": "No microphone found on this device."
+        };
+        setVoiceError(map[event.error] || "Voice input failed. Please try again.");
+      }
+      setVoiceInterim("");
+      setIsListening(false);
+    };
+
+    recognizer.onend = () => {
+      setIsListening(false);
+      setVoiceInterim("");
+    };
+
+    recognizer.start();
   };
 
   const readAsDataURL = (file) => new Promise((resolve, reject) => {
@@ -321,7 +471,12 @@ function ChatPage({
   };
 
   // -- Core send logic ---------------------------------------------
-  const sendMessage = async (questionText, conversationSoFar, currentAttachments = []) => {
+  const sendMessage = async (
+    questionText,
+    conversationSoFar,
+    currentAttachments = [],
+    modelOverride = selectedModel
+  ) => {
     abortRef.current = new AbortController();
     userStoppedRef.current = false;
     const onChunk = createChunkHandler();
@@ -335,7 +490,7 @@ function ChatPage({
     try {
       const response = await askTutor(questionText, resourceContents, {
         onChunk,
-        selectedModel,
+        selectedModel: modelOverride,
         attachments: currentAttachments,
         signal: abortRef.current.signal,
         conversationHistory: conversationSoFar,
@@ -456,6 +611,8 @@ function ChatPage({
     setInput("");
     setAttachments([]);
     setAttachError("");
+    setVoiceError("");
+    setVoiceInterim("");
 
     const userMsg = {
       role: "user",
@@ -544,7 +701,13 @@ function ChatPage({
 
   // ----------------------------------------------------------------
   return (
-    <div className="chat-page">
+    <div
+      className={`chat-page ${isDragActive ? "drag-active" : ""}`}
+      onDragEnter={handleDragEnter}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       {/* --- Header ----------------------------------------------- */}
       <div className="chat-page-header">
         <div className="chat-header-left">
@@ -808,6 +971,14 @@ function ChatPage({
 
       {/* --- Input area -------------------------------------------- */}
       <div className="chat-input-container">
+        {isDragActive && (
+          <div className="drag-drop-overlay">
+            <div className="drag-drop-overlay-content">
+              Drop files here to attach
+            </div>
+          </div>
+        )}
+
         {/* Attachment previews */}
         {attachments.length > 0 && (
           <div className="attachment-preview-area">
@@ -827,7 +998,8 @@ function ChatPage({
         )}
 
         {attachError && <div className="attach-error">{attachError}</div>}
-
+        {voiceError && <div className="attach-error">{voiceError}</div>}
+        {voiceInterim && <div className="voice-interim">Listening: {voiceInterim}</div>}
         {rateLimitMsg && (
           <div className="rate-limit-banner">
             <span>⏳ {rateLimitMsg}</span>
@@ -854,11 +1026,24 @@ function ChatPage({
             <Paperclip size={18} />
           </button>
 
+          <button
+            type="button"
+            className={`voice-btn ${isListening ? "listening" : ""}`}
+            title={isListening ? "Stop voice input" : "Start voice input"}
+            onClick={handleVoiceInput}
+            disabled={isLoading || isStreaming}
+          >
+            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+          </button>
+
           <textarea
             ref={textareaRef}
             value={input}
-            onChange={e => setInput(e.target.value)}
+            onChange={e => {
+              setInput(e.target.value);
+            }}
             onKeyDown={handleKeyDown}
+            onPaste={handleInputPaste}
             placeholder="Ask anything…"
             rows={1}
             className="chat-input"
