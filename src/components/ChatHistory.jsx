@@ -156,14 +156,6 @@ function ChatHistory({
                     <Plus size={13} />
                   </button>
                 </div>
-                <button
-                  className="create-app-btn"
-                  onClick={onCreateCustomApp}
-                  title="Create New App"
-                >
-                  <AppWindow size={15} />
-                  <span>Create New App</span>
-                </button>
                 {customApps.length > 0 && customApps.map(app => (
                   <div
                     key={app.id}
