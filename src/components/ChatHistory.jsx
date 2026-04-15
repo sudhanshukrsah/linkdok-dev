@@ -7,7 +7,9 @@ import {
   Sparkles,
   Plus,
   Trash2,
-  Bot
+  Bot,
+  Pencil,
+  AppWindow
 } from 'lucide-react';
 import './ChatHistory.css';
 
@@ -29,6 +31,13 @@ function ChatHistory({
   onNewFreeChat,
   onDeleteFreeSession,
   isFreeChat,
+  // Custom app props
+  customApps = [],
+  activeCustomApp,
+  onOpenCustomApp,
+  onCreateCustomApp,
+  onEditCustomApp,
+  onDeleteCustomApp,
 }) {
   const [modelIdx, setModelIdx] = useState(0);
   const [modelVisible, setModelVisible] = useState(true);
@@ -71,6 +80,23 @@ function ChatHistory({
               <Sparkles size={20} />
             </button>
             <div className="collapsed-chats">
+              <button
+                className="collapsed-btn"
+                onClick={onCreateCustomApp}
+                title="Create New App"
+              >
+                <AppWindow size={20} />
+              </button>
+              {customApps.slice(0, 5).map(app => (
+                <button
+                  key={app.id}
+                  className={`collapsed-btn ${app.id === activeCustomApp?.id ? 'active' : ''}`}
+                  onClick={() => onOpenCustomApp(app)}
+                  title={app.name}
+                >
+                  <Bot size={20} />
+                </button>
+              ))}
               {categories.slice(0, 5).map(category => (
                 <button
                   key={category.id}
@@ -122,6 +148,52 @@ function ChatHistory({
             </div>
 
             <div className="chat-list">
+              {/* Custom apps */}
+              <div className="chat-group apps-group">
+                <div className="chat-group-label apps-label-row">
+                  <span>Apps</span>
+                  <button className="apps-create-mini" onClick={onCreateCustomApp} title="Create New App">
+                    <Plus size={13} />
+                  </button>
+                </div>
+                <button
+                  className="create-app-btn"
+                  onClick={onCreateCustomApp}
+                  title="Create New App"
+                >
+                  <AppWindow size={15} />
+                  <span>Create New App</span>
+                </button>
+                {customApps.length > 0 && customApps.map(app => (
+                  <div
+                    key={app.id}
+                    className={`chat-item app-chat-item ${activeCustomApp?.id === app.id ? 'active' : ''}`}
+                  >
+                    <button
+                      className="chat-item-button"
+                      onClick={() => onOpenCustomApp(app)}
+                    >
+                      <Bot size={15} />
+                      <span className="chat-title">{app.name}</span>
+                    </button>
+                    <button
+                      className="chat-delete-btn app-edit-btn"
+                      onClick={(e) => { e.stopPropagation(); onEditCustomApp(app); }}
+                      title="Edit app"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      className="chat-delete-btn"
+                      onClick={(e) => { e.stopPropagation(); onDeleteCustomApp(app.id); }}
+                      title="Delete app"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
               {/* Free chat sessions */}
               {freeChatSessions && freeChatSessions.length > 0 && (
                 <div className="chat-group">

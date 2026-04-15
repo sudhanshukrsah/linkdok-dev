@@ -37,7 +37,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages, model, stream = false, temperature = 0.7, maxTokens = 4000 } = req.body;
+    const { messages, model, stream = false, temperature = 0.7, maxTokens = 16000 } = req.body;
 
     const msgError = validateMessages(messages);
     if (msgError) return res.status(400).json({ error: msgError });

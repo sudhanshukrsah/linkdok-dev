@@ -7,9 +7,19 @@ import AddCategoryModal from './components/AddCategoryModal';
 import ChatHistory from './components/ChatHistory';
 import ChatPage from './components/ChatPage';
 import IntroLanding from './components/IntroLanding';
+import CustomAppModal from './components/CustomAppModal';
 
 import { extractContentFromURL } from './utils/contentExtractor';
 import { prepareSearchData, createSearchEngine, performSearch, debounce } from './utils/searchEngine';
+import {
+  createCustomApp,
+  createInitialMemoryStore,
+  enhancePromptWithAI,
+  extractMemorySignals,
+  mergeMemory,
+  safeParseJSON,
+  sanitizePlainText,
+} from './utils/customApps';
 import './App.css';
 import { Analytics } from "@vercel/analytics/react"
 
@@ -125,8 +135,10 @@ function App() {
   const [currentView, setCurrentView] = useState(() => {
     const savedView = sessionStorage.getItem('currentView');
     const savedCatId = sessionStorage.getItem('activeChatCategoryId');
+    const savedAppId = sessionStorage.getItem('activeCustomAppId');
     if (savedView === 'chat' && savedCatId) return 'chat';
     if (savedView === 'freechat') return 'freechat';
+    if (savedView === 'customapp' && savedAppId) return 'customapp';
     return 'main';
   });
 
@@ -144,6 +156,37 @@ function App() {
       return sessions.find(s => s.id === Number(saved)) || null;
     } catch { return null; }
   });
+
+  // Custom AI apps state
+  const [customApps, setCustomApps] = useState(() => {
+    return safeParseJSON(localStorage.getItem('customApps'), []);
+  });
+  const [activeCustomApp, setActiveCustomApp] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem('activeCustomAppId');
+      if (!saved) return null;
+      const apps = JSON.parse(localStorage.getItem('customApps') || '[]');
+      return apps.find(app => app.id === Number(saved)) || null;
+    } catch { return null; }
+  });
+  const [customAppChats, setCustomAppChats] = useState(() => {
+    const chats = {};
+    try {
+      const apps = JSON.parse(localStorage.getItem('customApps') || '[]');
+      apps.forEach(app => {
+        chats[app.id] = JSON.parse(localStorage.getItem(`customAppChat_${app.id}`) || '[]');
+      });
+    } catch {
+      return {};
+    }
+    return chats;
+  });
+  const [customAppMemory, setCustomAppMemory] = useState(() => {
+    const saved = safeParseJSON(localStorage.getItem('customAppMemory'), null);
+    return saved || createInitialMemoryStore();
+  });
+  const [isCustomAppModalOpen, setIsCustomAppModalOpen] = useState(false);
+  const [editingCustomApp, setEditingCustomApp] = useState(null);
 
   // Handle window resize for sidebar state
   useEffect(() => {
@@ -235,6 +278,14 @@ function App() {
     }
   }, [categories]);
 
+  useEffect(() => {
+    localStorage.setItem('customApps', JSON.stringify(customApps));
+  }, [customApps, activeCustomApp]);
+
+  useEffect(() => {
+    localStorage.setItem('customAppMemory', JSON.stringify(customAppMemory));
+  }, [customAppMemory]);
+
   // Keep activeChatCategory in sync with live categories state
   // (covers the case where user refreshes on chat view — category was restored
   //  from a localStorage snapshot but may now reflect stale data)
@@ -252,6 +303,20 @@ function App() {
       }
     }
   }, [categories]);
+
+  useEffect(() => {
+    if (activeCustomApp) {
+      const live = customApps.find(app => app.id === activeCustomApp.id);
+      if (!live) {
+        setActiveCustomApp(null);
+        setCurrentView('main');
+        sessionStorage.removeItem('currentView');
+        sessionStorage.removeItem('activeCustomAppId');
+      } else if (live !== activeCustomApp) {
+        setActiveCustomApp(live);
+      }
+    }
+  }, [customApps, activeCustomApp]);
 
   // Save resource contents to localStorage
   useEffect(() => {
@@ -382,9 +447,11 @@ function App() {
 
   const handleOpenChat = (category) => {
     setActiveChatCategory(category);
+    setActiveCustomApp(null);
     setCurrentView('chat');
     sessionStorage.setItem('currentView', 'chat');
     sessionStorage.setItem('activeChatCategoryId', String(category.id));
+    sessionStorage.removeItem('activeCustomAppId');
   };
 
   const handleCloseChat = () => {
@@ -396,8 +463,10 @@ function App() {
 
   const handleSelectCategory = (category) => {
     setActiveChatCategory(category);
+    setActiveCustomApp(null);
     sessionStorage.setItem('currentView', 'chat');
     sessionStorage.setItem('activeChatCategoryId', String(category.id));
+    sessionStorage.removeItem('activeCustomAppId');
     
     // Ensure this category has a chat array
     if (!categoryChats[category.id]) {
@@ -425,9 +494,11 @@ function App() {
     setCurrentView('main');
     setActiveChatCategory(null);
     setActiveFreeSession(null);
+    setActiveCustomApp(null);
     sessionStorage.removeItem('currentView');
     sessionStorage.removeItem('activeChatCategoryId');
     sessionStorage.removeItem('activeFreeSessionId');
+    sessionStorage.removeItem('activeCustomAppId');
   };
 
   // Free chat handlers
@@ -443,19 +514,23 @@ function App() {
     localStorage.setItem('freeChatSessions', JSON.stringify(updated));
     setActiveFreeSession(newSession);
     setActiveChatCategory(null);
+    setActiveCustomApp(null);
     setCurrentView('freechat');
     sessionStorage.setItem('currentView', 'freechat');
     sessionStorage.setItem('activeFreeSessionId', String(newSession.id));
     sessionStorage.removeItem('activeChatCategoryId');
+    sessionStorage.removeItem('activeCustomAppId');
   };
 
   const handleOpenFreeChat = (session) => {
     setActiveFreeSession(session);
     setActiveChatCategory(null);
+    setActiveCustomApp(null);
     setCurrentView('freechat');
     sessionStorage.setItem('currentView', 'freechat');
     sessionStorage.setItem('activeFreeSessionId', String(session.id));
     sessionStorage.removeItem('activeChatCategoryId');
+    sessionStorage.removeItem('activeCustomAppId');
   };
 
   const handleUpdateFreeChatMessages = (sessionId, messages) => {
@@ -492,6 +567,108 @@ function App() {
         handleGoHome();
       }
     }
+  };
+
+  const handleOpenCustomApp = (app) => {
+    setActiveCustomApp(app);
+    setActiveChatCategory(null);
+    setActiveFreeSession(null);
+    setCurrentView('customapp');
+    sessionStorage.setItem('currentView', 'customapp');
+    sessionStorage.setItem('activeCustomAppId', String(app.id));
+    sessionStorage.removeItem('activeChatCategoryId');
+    sessionStorage.removeItem('activeFreeSessionId');
+
+    if (!customAppChats[app.id]) {
+      setCustomAppChats(prev => ({ ...prev, [app.id]: [] }));
+    }
+  };
+
+  const handleCreateCustomAppClick = () => {
+    setEditingCustomApp(null);
+    setIsCustomAppModalOpen(true);
+  };
+
+  const handleEditCustomApp = (app) => {
+    setEditingCustomApp(app);
+    setIsCustomAppModalOpen(true);
+  };
+
+  const handleSaveCustomApp = async ({ id, name, originalPrompt }) => {
+    const enhancedPrompt = await enhancePromptWithAI(name, originalPrompt);
+
+    if (id) {
+      const existingApp = customApps.find(app => app.id === id);
+      if (!existingApp) return;
+      const updatedApp = {
+        ...existingApp,
+        name,
+        originalPrompt: sanitizePlainText(originalPrompt),
+        enhancedPrompt,
+        updatedAt: Date.now(),
+      };
+
+      setCustomApps(prev => prev.map(app => app.id === id ? updatedApp : app));
+      if (activeCustomApp?.id === id) setActiveCustomApp(updatedApp);
+    } else {
+      const newApp = createCustomApp({ name, originalPrompt, enhancedPrompt });
+      setCustomApps(prev => [newApp, ...prev]);
+      setCustomAppChats(prev => ({ ...prev, [newApp.id]: [] }));
+      handleOpenCustomApp(newApp);
+    }
+
+    setIsCustomAppModalOpen(false);
+    setEditingCustomApp(null);
+  };
+
+  const handleDeleteCustomApp = (appId) => {
+    const app = customApps.find(item => item.id === appId);
+    if (!app) return;
+    if (!window.confirm(`Delete "${app.name}" and its chat history? This cannot be undone.`)) return;
+
+    setCustomApps(prev => prev.filter(item => item.id !== appId));
+    setCustomAppChats(prev => {
+      const next = { ...prev };
+      delete next[appId];
+      localStorage.removeItem(`customAppChat_${appId}`);
+      return next;
+    });
+    setCustomAppMemory(prev => {
+      const next = {
+        ...prev,
+        apps: { ...(prev.apps || {}) },
+      };
+      delete next.apps[appId];
+      return next;
+    });
+
+    if (activeCustomApp?.id === appId) {
+      handleGoHome();
+    }
+  };
+
+  const handleUpdateCustomAppMessages = (appId, messages) => {
+    setCustomAppChats(prev => ({
+      ...prev,
+      [appId]: messages
+    }));
+    localStorage.setItem(`customAppChat_${appId}`, JSON.stringify(messages));
+  };
+
+  const handleCustomAppMemoryUpdate = (appId, userText) => {
+    const signals = extractMemorySignals(userText);
+    if (!signals) return;
+
+    setCustomAppMemory(prev => {
+      const current = prev || createInitialMemoryStore();
+      return {
+        global: mergeMemory(current.global, signals),
+        apps: {
+          ...(current.apps || {}),
+          [appId]: mergeMemory(current.apps?.[appId], signals),
+        },
+      };
+    });
   };
 
   const handleToggleSidebar = () => {
@@ -637,10 +814,16 @@ function App() {
         onNewFreeChat={handleNewFreeChat}
         onDeleteFreeSession={handleDeleteFreeSession}
         isFreeChat={currentView === 'freechat'}
+        customApps={customApps}
+        activeCustomApp={activeCustomApp}
+        onOpenCustomApp={handleOpenCustomApp}
+        onCreateCustomApp={handleCreateCustomAppClick}
+        onEditCustomApp={handleEditCustomApp}
+        onDeleteCustomApp={handleDeleteCustomApp}
       />
 
       {/* Main Content Area */}
-      <div className={`main-app-container ${currentView === 'chat' || currentView === 'freechat' ? 'chat-view' : ''}`}>
+      <div className={`main-app-container ${currentView === 'chat' || currentView === 'freechat' || currentView === 'customapp' ? 'chat-view' : ''}`}>
         {currentView === 'freechat' && activeFreeSession ? (
           <ChatPage
             key={`freechat-${activeFreeSession.id}`}
@@ -653,6 +836,22 @@ function App() {
             onToggleTheme={() => setIsDarkMode(!isDarkMode)}
             onToggleSidebar={handleToggleSidebar}
             isPlayground={true}
+          />
+        ) : currentView === 'customapp' && activeCustomApp ? (
+          <ChatPage
+            key={`customapp-${activeCustomApp.id}`}
+            category={{ id: activeCustomApp.id, name: activeCustomApp.name, links: [] }}
+            messages={customAppChats[activeCustomApp.id] || []}
+            onUpdateMessages={(msgs) => handleUpdateCustomAppMessages(activeCustomApp.id, msgs)}
+            resourceContents={[]}
+            isPreparingChat={false}
+            isDarkMode={isDarkMode}
+            onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+            onToggleSidebar={handleToggleSidebar}
+            customApp={activeCustomApp}
+            globalMemory={customAppMemory.global}
+            appMemory={customAppMemory.apps?.[activeCustomApp.id]}
+            onMemoryUpdate={(userText) => handleCustomAppMemoryUpdate(activeCustomApp.id, userText)}
           />
         ) : currentView === 'chat' && activeChatCategory ? (
           <ChatPage
@@ -857,9 +1056,20 @@ function App() {
           onSave={addCategory}
         />
       )}
+
           </>
         )}
       </div>
+      {isCustomAppModalOpen && (
+        <CustomAppModal
+          editingApp={editingCustomApp}
+          onClose={() => {
+            setIsCustomAppModalOpen(false);
+            setEditingCustomApp(null);
+          }}
+          onSave={handleSaveCustomApp}
+        />
+      )}
       <Analytics />
       </div>
     </>

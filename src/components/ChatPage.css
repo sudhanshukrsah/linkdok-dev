@@ -1564,6 +1564,12 @@ body.light-mode .think-pill-off   { color: #dc2626; border-color: rgba(220,38,38
   animation: playground-pulse 3s ease-in-out infinite;
 }
 
+.custom-app-welcome-icon {
+  opacity: 1;
+  color: #60a5fa;
+  filter: drop-shadow(0 0 12px rgba(59, 130, 246, 0.35));
+}
+
 @keyframes playground-pulse {
   0%, 100% { filter: drop-shadow(0 0 8px rgba(139,92,246,0.3)); }
   50%       { filter: drop-shadow(0 0 18px rgba(139,92,246,0.7)); }

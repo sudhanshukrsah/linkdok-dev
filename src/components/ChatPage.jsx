@@ -105,6 +105,10 @@ function ChatPage({
   onToggleTheme,
   onToggleSidebar,
   isPlayground = false,
+  customApp = null,
+  globalMemory = null,
+  appMemory = null,
+  onMemoryUpdate = null,
 }) {
   const [input, setInput]                     = useState("");
   const [isLoading, setIsLoading]             = useState(false);
@@ -135,7 +139,7 @@ function ChatPage({
   const modelDropRef      = useRef(null);
   const rateLimitTimerRef = useRef(null);   // auto-clear the rate-limit banner
   const clientHitsRef     = useRef([]);     // timestamps for client-side soft rate limit
-  const userStoppedRef    = useRef(false);  // distinguish user-stop from timeout
+  const userStoppedRef    = useRef(false);  // distinguish user-stop from external aborts
   const thinkingAccumRef  = useRef("");     // accumulates reasoning_content tokens
   const speechRecRef      = useRef(null);
   const dragDepthRef      = useRef(0);
@@ -380,7 +384,24 @@ function ChatPage({
     speechRecRef.current?.stop?.();
   }, []);
 
-  const handleVoiceInput = () => {
+  const ensureMicPermission = async () => {
+    if (!navigator?.mediaDevices?.getUserMedia) return true;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      stream.getTracks().forEach(track => track.stop());
+      return true;
+    } catch (err) {
+      const secureHint = window.isSecureContext
+        ? "Mic permission blocked. Browser site settings me microphone allow karo."
+        : "Voice input ke liye HTTPS ya localhost required hai.";
+      const permissionErrors = ["NotAllowedError", "PermissionDeniedError", "SecurityError"];
+      if (permissionErrors.includes(err?.name)) setVoiceError(secureHint);
+      else setVoiceError("Microphone access failed. Mic device aur browser settings check karo.");
+      return false;
+    }
+  };
+
+  const handleVoiceInput = async () => {
     if (isListening) {
       stopVoiceInput();
       return;
@@ -392,6 +413,13 @@ function ChatPage({
 
     setVoiceError("");
     setVoiceInterim("");
+    const hasPermission = await ensureMicPermission();
+    if (!hasPermission) return;
+
+    // Ensure we don't reuse a stale recognizer instance.
+    speechRecRef.current?.stop?.();
+    speechRecRef.current = null;
+
     const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recognizer = new SpeechRecognitionClass();
     speechRecRef.current = recognizer;
@@ -421,10 +449,15 @@ function ChatPage({
 
     recognizer.onerror = (event) => {
       if (event.error !== "aborted") {
+        const secureHint = window.isSecureContext
+          ? "Mic permission blocked. Browser site settings me microphone allow karo."
+          : "Voice input ke liye HTTPS ya localhost required hai.";
         const map = {
-          "not-allowed": "Mic permission denied. Please allow microphone access.",
+          "not-allowed": secureHint,
+          "service-not-allowed": secureHint,
           "no-speech": "No speech detected. Please speak again.",
-          "audio-capture": "No microphone found on this device."
+          "audio-capture": "No microphone found on this device.",
+          "network": "Voice service network issue. Thoda der baad dubara try karo."
         };
         setVoiceError(map[event.error] || "Voice input failed. Please try again.");
       }
@@ -437,7 +470,12 @@ function ChatPage({
       setVoiceInterim("");
     };
 
-    recognizer.start();
+    try {
+      recognizer.start();
+    } catch {
+      setIsListening(false);
+      setVoiceError("Voice input start nahi ho paaya. Please once page refresh karke try karo.");
+    }
   };
 
   const readAsDataURL = (file) => new Promise((resolve, reject) => {
@@ -495,6 +533,9 @@ function ChatPage({
         signal: abortRef.current.signal,
         conversationHistory: conversationSoFar,
         playground: isPlayground,
+        customApp,
+        globalMemory,
+        appMemory,
         thinkingMode,
         onThinkingChunk,
       });
@@ -515,12 +556,12 @@ function ChatPage({
     } catch (err) {
       if (err.name === "AbortError") {
         if (!userStoppedRef.current) {
-          // Timeout — not a user action
+          // Browser/server/network aborted the request. Keep any partial stream.
           return {
             role: "assistant",
             content: streamAccumRef.current ||
-              "*(The model took too long to respond. Try a shorter question, disable thinking mode, or switch to a faster model like Step Flash.)*",
-            metadata: { timedOut: true },
+              "*(The connection ended before the model finished. Please retry, or use a deployed/runtime setup that allows longer streaming requests.)*",
+            metadata: { aborted: true },
           };
         }
         // User pressed Stop — keep whatever was streamed
@@ -575,7 +616,7 @@ function ChatPage({
         // Step 3 — generate and download PDF
         await exportChatToPDF({
           messages,
-          categoryName: isPlayground ? "Playground" : category?.name,
+          categoryName: customApp ? customApp.name : isPlayground ? "Playground" : category?.name,
           isPlayground,
           formattedContent,
         });
@@ -625,6 +666,7 @@ function ChatPage({
     try {
       const assistantMsg = await sendMessage(userText, messages, snapshot);
       onUpdateMessages([...newMessages, assistantMsg]);
+      onMemoryUpdate?.(userText, assistantMsg);
     } catch (err) {
       console.error("Chat error:", err);
       if (err.rateLimited) {
@@ -657,6 +699,7 @@ function ChatPage({
     try {
       const assistantMsg = await sendMessage(editingText.trim(), kept.slice(0, -1));
       onUpdateMessages([...kept, assistantMsg]);
+      onMemoryUpdate?.(editingText.trim(), assistantMsg);
     } catch (err) {
       console.error("Edit re-ask error:", err);
       if (err.rateLimited) {
@@ -829,7 +872,25 @@ function ChatPage({
 
         {messages.length === 0 && (
           <div className="chat-welcome">
-            {isPlayground ? (
+            {customApp ? (
+              <>
+                <div className="chat-welcome-icon custom-app-welcome-icon">✦</div>
+                <h3>{customApp.name}</h3>
+                <p>This custom app will answer from its master prompt and improve with saved memory.</p>
+                <div className="suggested-questions">
+                  {[
+                    "Start by asking what you remember about my goals",
+                    "Make a practical plan for me",
+                    "Ask me questions to personalize your advice",
+                    "Give me expert feedback on my current approach",
+                  ].map(q => (
+                    <button key={q} className="suggested-chip" onClick={() => handleSuggestedQuestion(q)}>
+                      {q}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : isPlayground ? (
               <>
                 <div className="chat-welcome-icon playground-icon">✦</div>
                 <h3>Ask me anything</h3>

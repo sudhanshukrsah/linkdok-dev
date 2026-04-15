@@ -96,8 +96,7 @@ export default async function handler(req, res) {
         'Authorization': `Bearer ${NVIDIA_API_KEY}`,
         'Accept': stream ? 'text/event-stream' : 'application/json'
       },
-      body: JSON.stringify(payload),
-      signal: AbortSignal.timeout(295000) // 295s — just under maxDuration:300 in vercel.json
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) {
