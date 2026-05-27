@@ -174,13 +174,15 @@ function shouldUseThinking(question, intent, modelKey, thinkingMode = 'auto') {
 // -----------------------------------------------------------------
 // SSE stream reader
 // -----------------------------------------------------------------
-async function readSSEStream(body, onChunk, onThinkingChunk) {
+async function readSSEStream(body, onChunk, onThinkingChunk, {
+  leadingInlineThinking = false
+} = {}) {
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let fullContent = '';
   let buffer = '';
   let inlineBuffer = '';
-  let inInlineThinking = false;
+  let inInlineThinking = leadingInlineThinking;
   let answerStarted = false;
 
   const emitAnswer = (token) => {
@@ -200,26 +202,35 @@ async function readSSEStream(body, onChunk, onThinkingChunk) {
 
     while (inlineBuffer) {
       if (inInlineThinking) {
-        const closeIndex = inlineBuffer.indexOf('</think>');
-        if (closeIndex === -1) {
-          const safeLength = flush ? inlineBuffer.length : Math.max(0, inlineBuffer.length - 8);
+        const leadingOpenMatch = inlineBuffer.match(/^\s*<think(?:\s[^>]*)?\s*>/i);
+        if (leadingOpenMatch) {
+          inlineBuffer = inlineBuffer.slice(leadingOpenMatch[0].length);
+          continue;
+        }
+
+        const closeMatch = inlineBuffer.match(/<\/think\s*>/i);
+        if (!closeMatch) {
+          const safeLength = flush ? inlineBuffer.length : Math.max(0, inlineBuffer.length - 16);
           emitThinking(inlineBuffer.slice(0, safeLength));
           inlineBuffer = inlineBuffer.slice(safeLength);
           return;
         }
 
+        const closeIndex = closeMatch.index;
         emitThinking(inlineBuffer.slice(0, closeIndex));
-        inlineBuffer = inlineBuffer.slice(closeIndex + '</think>'.length);
+        inlineBuffer = inlineBuffer.slice(closeIndex + closeMatch[0].length);
         inInlineThinking = false;
         continue;
       }
 
-      const openIndex = inlineBuffer.indexOf('<think>');
-      const closeIndex = inlineBuffer.indexOf('</think>');
+      const openMatch = inlineBuffer.match(/<think(?:\s[^>]*)?\s*>/i);
+      const closeMatch = inlineBuffer.match(/<\/think\s*>/i);
+      const openIndex = openMatch?.index ?? -1;
+      const closeIndex = closeMatch?.index ?? -1;
 
       if (openIndex !== -1 && (closeIndex === -1 || openIndex < closeIndex)) {
         emitAnswer(inlineBuffer.slice(0, openIndex));
-        inlineBuffer = inlineBuffer.slice(openIndex + '<think>'.length);
+        inlineBuffer = inlineBuffer.slice(openIndex + openMatch[0].length);
         inInlineThinking = true;
         continue;
       }
@@ -227,12 +238,12 @@ async function readSSEStream(body, onChunk, onThinkingChunk) {
       // Some providers stream hidden thinking as leading content and only expose </think>.
       if (!answerStarted && closeIndex !== -1) {
         emitThinking(inlineBuffer.slice(0, closeIndex));
-        inlineBuffer = inlineBuffer.slice(closeIndex + '</think>'.length);
+        inlineBuffer = inlineBuffer.slice(closeIndex + closeMatch[0].length);
         inInlineThinking = false;
         continue;
       }
 
-      const safeLength = flush ? inlineBuffer.length : Math.max(0, inlineBuffer.length - 8);
+      const safeLength = flush ? inlineBuffer.length : Math.max(0, inlineBuffer.length - 16);
       emitAnswer(inlineBuffer.slice(0, safeLength));
       inlineBuffer = inlineBuffer.slice(safeLength);
       return;
@@ -251,7 +262,10 @@ async function readSSEStream(body, onChunk, onThinkingChunk) {
       for (const line of lines) {
         if (!line.startsWith('data: ')) continue;
         const payload = line.slice(6).trim();
-        if (payload === '[DONE]') return fullContent;
+        if (payload === '[DONE]') {
+          processContentToken('', true);
+          return fullContent;
+        }
         try {
           const data = JSON.parse(payload);
           const delta = data.choices?.[0]?.delta ?? {};
@@ -356,16 +370,17 @@ async function callNvidiaModel(messages, modelKey, useThinking, signal, onChunk,
     throw new Error(`NVIDIA ${response.status}: ${txt}`);
   }
 
-  const content = await readSSEStream(response.body, onChunk, onThinkingChunk);
+  const content = await readSSEStream(response.body, onChunk, onThinkingChunk, {
+    leadingInlineThinking: Boolean(cfg.inlineThinking)
+  });
   if (!content) throw new Error('Empty response');
   return content;
 }
 
 async function callNvidia(messages, question, intent, selectedModel, signal, onChunk, thinkingMode = 'auto', onThinkingChunk, hasVisionContent = false) {
   const isCustom = selectedModel && selectedModel !== 'auto';
-  // When a vision attachment is present and the user hasn't manually chosen a model,
-  // use the dedicated VISION_MODELS list so mistral-large answers first (fastest for vision).
-  const baseList = (hasVisionContent && !isCustom)
+  // Vision attachments use vision-capable models as the fallback path.
+  const baseList = hasVisionContent
     ? VISION_MODELS
     : (INTENT_ROUTING[intent] ?? INTENT_ROUTING.general);
   const priorityList = isCustom
@@ -509,7 +524,8 @@ export async function askTutor(question, resourceContents, {
   thinkingMode = 'auto',   // 'auto' | 'on' | 'off'
   onThinkingChunk = null   // called with reasoning_content tokens while model thinks
 } = {}) {
-  if (!question?.trim()) {
+  const hasAttachments = attachments.length > 0;
+  if (!question?.trim() && !hasAttachments) {
     return { answer: 'Please ask a valid question.', basedOnResources: false };
   }
 
@@ -607,7 +623,6 @@ Be direct and avoid unnecessary preamble. Never refuse reasonable questions.`;
   // ── End playground mode ──────────────────────────────────────────
 
   const hasResources = Array.isArray(resourceContents) && resourceContents.length > 0;
-  const hasAttachments = attachments.length > 0;
 
   if (!hasResources && !hasAttachments) {
     return {

@@ -31,6 +31,7 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB per image
 const MAX_TEXT_BYTES  = 500 * 1024;       // 500 KB for text files
 const MAX_PDF_BYTES   = 20 * 1024 * 1024; // 20 MB for PDFs
 const MAX_IMAGES      = 5;                // max images per message
+const ATTACHMENT_ONLY_PROMPT = "Please analyze the attached image or file. If it contains text, read it and explain the important details.";
 
 // Custom code block renderer for ReactMarkdown
 function CodeBlock({ node, inline, className, children, ...props }) {
@@ -571,10 +572,11 @@ function ChatPage({
   const handleSubmit = async (e) => {
     e?.preventDefault();
     const userText = input.trim();
-    if (!userText || isLoading) return;
+    const hasQueuedAttachments = attachments.length > 0;
+    if ((!userText && !hasQueuedAttachments) || isLoading) return;
 
     // --- PDF export intent detection ---
-    const pdfIntent = detectPDFIntent(userText);
+    const pdfIntent = userText ? detectPDFIntent(userText) : false;
     if (pdfIntent) {
       const allResponses = messages.filter(m => m.role === "assistant");
       if (!allResponses.length) {
@@ -635,6 +637,7 @@ function ChatPage({
     clientHitsRef.current.push(now);
 
     const snapshot = [...attachments];
+    const questionForAI = userText || ATTACHMENT_ONLY_PROMPT;
     setInput("");
     setAttachments([]);
     setAttachError("");
@@ -650,9 +653,9 @@ function ChatPage({
     onUpdateMessages(newMessages);
 
     try {
-      const assistantMsg = await sendMessage(userText, messages, snapshot);
+      const assistantMsg = await sendMessage(questionForAI, messages, snapshot);
       onUpdateMessages([...newMessages, assistantMsg]);
-      onMemoryUpdate?.(userText, assistantMsg);
+      onMemoryUpdate?.(userText || "[Attachment]", assistantMsg);
     } catch (err) {
       console.error("Chat error:", err);
       if (err.rateLimited) {
@@ -907,7 +910,7 @@ function ChatPage({
                   {msg.attachments?.filter(a => a.type === "text").map((a, ai) => (
                     <div key={ai} className="message-attachment-badge">?? {a.name}</div>
                   ))}
-                  <p>{msg.content}</p>
+                  {msg.content && <p>{msg.content}</p>}
                   <button className="message-action-btn edit-btn" onClick={() => { setEditingIndex(idx); setEditingText(msg.content); }} title="Edit">
                     <Edit2 size={15} />
                   </button>
@@ -1062,7 +1065,7 @@ function ChatPage({
               <Square size={16} fill="currentColor" />
             </button>
           ) : (
-            <button type="submit" disabled={!input.trim() || isLoading} className="send-btn" title="Send">
+            <button type="submit" disabled={(!input.trim() && attachments.length === 0) || isLoading} className="send-btn" title="Send">
               <Send size={18} />
             </button>
           )}
