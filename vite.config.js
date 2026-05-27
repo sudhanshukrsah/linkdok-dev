@@ -29,7 +29,7 @@ export default defineConfig(({ mode }) => {
           configure: (proxy) => {
             proxy.on('proxyReq', (proxyReq) => {
               proxyReq.setHeader('Authorization', `Bearer ${env.VITE_NVIDIA_API_KEY}`);
-              proxyReq.setHeader('Accept', 'application/json');
+              proxyReq.setHeader('Accept', 'text/event-stream');
             });
           }
         }

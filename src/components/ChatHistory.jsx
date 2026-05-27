@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import './ChatHistory.css';
 
-const FREE_CHAT_MODELS = ['Kimi K2.5', 'Mistral Large', 'Devstral', 'GLM-5'];
+const FREE_CHAT_MODELS = ['Kimi K2.6', 'Mistral Medium', 'DeepSeek V4', 'Nemotron'];
 
 function ChatHistory({ 
   categories,

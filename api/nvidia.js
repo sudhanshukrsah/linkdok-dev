@@ -6,7 +6,17 @@ import { rateLimit, getIP, setCorsHeaders, isOriginAllowed, validateMessages } f
 
 // NVIDIA model ID allow-list – must stay in sync with NVIDIA_REGISTRY in aiTutor.js
 const ALLOWED_MODELS = new Set([
-  'moonshotai/kimi-k2.5',                      // kimi-k2.5
+  'moonshotai/kimi-k2.6',                      // kimi-k2.6
+  'mistralai/mistral-medium-3.5-128b',         // mistral-medium-3.5
+  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning', // nemotron-nano
+  'deepseek-ai/deepseek-v4-flash',             // deepseek-v4-flash
+  'deepseek-ai/deepseek-v4-pro',               // deepseek-v4-pro
+  'z-ai/glm-5.1',                              // glm-5.1
+  'minimaxai/minimax-m2.7',                    // minimax-m2.7
+  'google/gemma-4-31b-it',                     // gemma-4-31b
+  'nvidia/nemotron-3-super-120b-a12b',         // nemotron-super
+  'sarvamai/sarvam-m',                         // sarvam-m
+  'qwen/qwen3-coder-480b-a35b-instruct',       // qwen3-coder
   'stepfun-ai/step-3.5-flash',                 // step-flash
   'mistralai/devstral-2-123b-instruct-2512',   // devstral
   'deepseek-ai/deepseek-v3.2',                  // deepseek-v3.2
@@ -61,6 +71,8 @@ export default async function handler(req, res) {
       maxTokens = 8192,
       topP,
       topK,
+      reasoningEffort,
+      reasoningBudget,
       chatTemplateKwargs,
       stream = false
     } = req.body;
@@ -70,7 +82,7 @@ export default async function handler(req, res) {
     if (msgError) return res.status(400).json({ error: msgError });
 
     // Validate model – only allow known NVIDIA models
-    const resolvedModel = model || 'moonshotai/kimi-k2.5';
+    const resolvedModel = model || 'moonshotai/kimi-k2.6';
     if (!ALLOWED_MODELS.has(resolvedModel)) {
       return res.status(400).json({ error: 'Unknown model requested' });
     }
@@ -87,6 +99,8 @@ export default async function handler(req, res) {
     };
 
     if (topK !== undefined) payload.top_k = topK;
+    if (reasoningEffort) payload.reasoning_effort = reasoningEffort;
+    if (reasoningBudget !== undefined) payload.reasoning_budget = reasoningBudget;
     if (chatTemplateKwargs) payload.chat_template_kwargs = chatTemplateKwargs;
 
     const response = await fetch(NVIDIA_URL, {

@@ -13,10 +13,60 @@ const OPENROUTER_ENDPOINT = '/api/chat';
 // Model Registry  (id ? NVIDIA API config)
 // -----------------------------------------------------------------
 const NVIDIA_REGISTRY = {
-  'kimi-k2.5': {
-    model: 'moonshotai/kimi-k2.5',
-    maxTokens: 32768, topP: 1.00, temperature: 1.0,
+  'kimi-k2.6': {
+    model: 'moonshotai/kimi-k2.6',
+    maxTokens: 16384, topP: 1.00, temperature: 1.0,
     thinkingKwargs: { thinking: true },
+  },
+  'mistral-medium-3.5': {
+    model: 'mistralai/mistral-medium-3.5-128b',
+    maxTokens: 16384, topP: 1.00, temperature: 0.7,
+    reasoningEffort: 'high',
+  },
+  'nemotron-nano': {
+    model: 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning',
+    maxTokens: 65536, topP: 0.95, temperature: 0.6,
+    reasoningBudget: 16384,
+    thinkingKwargs: { enable_thinking: true },
+  },
+  'deepseek-v4-flash': {
+    model: 'deepseek-ai/deepseek-v4-flash',
+    maxTokens: 16384, topP: 0.95, temperature: 1.0,
+    thinkingKwargs: { thinking: true, reasoning_effort: 'high' },
+  },
+  'deepseek-v4-pro': {
+    model: 'deepseek-ai/deepseek-v4-pro',
+    maxTokens: 16384, topP: 0.95, temperature: 1.0,
+    chatTemplateKwargs: { thinking: false },
+  },
+  'glm-5.1': {
+    model: 'z-ai/glm-5.1',
+    maxTokens: 16384, topP: 1.00, temperature: 1.0,
+    thinkingKwargs: { enable_thinking: true, clear_thinking: false },
+  },
+  'minimax-m2.7': {
+    model: 'minimaxai/minimax-m2.7',
+    maxTokens: 8192, topP: 0.95, temperature: 1.0,
+  },
+  'gemma-4-31b': {
+    model: 'google/gemma-4-31b-it',
+    maxTokens: 16384, topP: 0.95, temperature: 1.0,
+    thinkingKwargs: { enable_thinking: true },
+  },
+  'nemotron-super': {
+    model: 'nvidia/nemotron-3-super-120b-a12b',
+    maxTokens: 16384, topP: 0.95, temperature: 1.0,
+    reasoningBudget: 16384,
+    thinkingKwargs: { enable_thinking: true },
+  },
+  'sarvam-m': {
+    model: 'sarvamai/sarvam-m',
+    maxTokens: 16384, topP: 1.00, temperature: 0.5,
+    inlineThinking: true,
+  },
+  'qwen3-coder': {
+    model: 'qwen/qwen3-coder-480b-a35b-instruct',
+    maxTokens: 4096, topP: 0.80, temperature: 0.7,
   },
   'glm5': {
     model: 'z-ai/glm5',
@@ -49,29 +99,39 @@ const NVIDIA_REGISTRY = {
 
 // Fallback order per question intent
 const INTENT_ROUTING = {
-  coding:    ['devstral',       'deepseek-v3.2', 'qwen3.5'],
-  reasoning: ['kimi-k2.5',     'deepseek-v3.2', 'qwen3.5'],
-  creative:  ['mistral-large',  'qwen3.5',       'glm5'],
-  factual:   ['step-flash',     'qwen3.5',       'mistral-large'],
-  analysis:  ['deepseek-v3.2',  'kimi-k2.5',     'qwen3.5'],
+  coding:    ['qwen3-coder',         'devstral',           'deepseek-v4-flash'],
+  reasoning: ['kimi-k2.6',           'nemotron-super',     'deepseek-v4-flash'],
+  creative:  ['mistral-medium-3.5',  'mistral-large',      'glm-5.1'],
+  factual:   ['step-flash',          'sarvam-m',           'mistral-medium-3.5'],
+  analysis:  ['deepseek-v4-flash',   'kimi-k2.6',          'nemotron-super'],
   // step-flash leads for general/simple questions — fast first response = great first impression
-  general:   ['step-flash',     'qwen3.5',       'mistral-large'],
+  general:   ['step-flash',          'mistral-medium-3.5', 'gemma-4-31b'],
 };
 
 // Vision/multimodal routing: when user attaches an image or PDF,
 // mistral-large goes first (fast + reliable), then other capable models as fallback.
-const VISION_MODELS = ['mistral-large', 'qwen3.5', 'step-flash', 'deepseek-v3.2'];
+const VISION_MODELS = ['mistral-medium-3.5', 'mistral-large', 'gemma-4-31b', 'step-flash'];
 
 // Public model list for the UI model selector
 export const AVAILABLE_MODELS = [
-  { id: 'auto',          label: 'Auto',           description: 'Smart routing — best model per question', abbr: '✦',  color: '#3b82f6', supportsThinking: true  },
-  { id: 'kimi-k2.5',    label: 'Kimi K2.5',      description: 'Deep reasoning & math',                   abbr: 'K2', color: '#8b5cf6', supportsThinking: true  },
-  { id: 'step-flash',   label: 'Step Flash',      description: 'Fastest answers',                         abbr: '⚡', color: '#f59e0b', supportsThinking: false },
-  { id: 'devstral',     label: 'Devstral',        description: 'Code & technical tasks',                  abbr: '{}', color: '#10b981', supportsThinking: false },
-  { id: 'deepseek-v3.2',label: 'DeepSeek V3',     description: 'Deep research & analysis',                abbr: 'DS', color: '#06b6d4', supportsThinking: true  },
-  { id: 'mistral-large',label: 'Mistral Large',   description: 'Creative writing & long-form',            abbr: 'ML', color: '#ec4899', supportsThinking: false },
-  { id: 'qwen3.5',      label: 'Qwen 3.5',        description: 'Powerful all-rounder',                    abbr: 'Q3', color: '#f97316', supportsThinking: true  },
-  { id: 'glm5',         label: 'GLM5',            description: 'General purpose',                         abbr: 'G5', color: '#64748b', supportsThinking: true  },
+  { id: 'auto',          label: 'Auto',           description: 'Smart routing - best model per question',  abbr: '*',  color: '#3b82f6', supportsThinking: true  },
+  { id: 'kimi-k2.6',    label: 'Kimi K2.6',      description: 'Deep reasoning & math',                   abbr: 'K2', color: '#8b5cf6', icon: '/kimi.png', supportsThinking: true  },
+  { id: 'mistral-medium-3.5', label: 'Mistral Medium 3.5', description: 'Balanced reasoning & writing',   abbr: 'MM', color: '#dc2626', icon: '/mistral and devstral.png', supportsThinking: false },
+  { id: 'nemotron-nano', label: 'Nemotron Nano',  description: 'Fast reasoning with long output',         abbr: 'NN', color: '#0ea5e9', icon: '/nemotron.png', supportsThinking: true  },
+  { id: 'deepseek-v4-flash', label: 'DeepSeek V4 Flash', description: 'Fast deep reasoning',             abbr: 'D4', color: '#06b6d4', icon: '/deepseek.png', supportsThinking: true  },
+  { id: 'deepseek-v4-pro', label: 'DeepSeek V4 Pro', description: 'High quality non-thinking answers',   abbr: 'DP', color: '#0891b2', icon: '/deepseek.png', supportsThinking: false },
+  { id: 'glm-5.1',      label: 'GLM 5.1',        description: 'General reasoning assistant',             abbr: 'G5', color: '#64748b', icon: '/GLM.png', supportsThinking: true  },
+  { id: 'minimax-m2.7', label: 'MiniMax M2.7',    description: 'General chat & writing',                  abbr: 'M2', color: '#db2777', icon: '/minimax.png', supportsThinking: false },
+  { id: 'gemma-4-31b',  label: 'Gemma 4 31B',     description: 'Open reasoning model',                    abbr: 'GM', color: '#16a34a', icon: '/gemma.png', supportsThinking: true  },
+  { id: 'nemotron-super', label: 'Nemotron Super', description: 'Large reasoning model',                  abbr: 'NS', color: '#2563eb', icon: '/nemotron.png', supportsThinking: true  },
+  { id: 'sarvam-m',     label: 'Sarvam-M',        description: 'Strong Indian language support',          abbr: 'SA', color: '#ea580c', icon: '/sarvam.png', supportsThinking: true  },
+  { id: 'qwen3-coder',  label: 'Qwen3 Coder',     description: 'Coding specialist',                       abbr: 'QC', color: '#f97316', icon: '/qwen.png', supportsThinking: false },
+  { id: 'step-flash',   label: 'Step Flash',      description: 'Fastest answers',                         abbr: 'SF', color: '#f59e0b', icon: '/step 3.5 flash.png', supportsThinking: false },
+  { id: 'devstral',     label: 'Devstral',        description: 'Code & technical tasks',                  abbr: '{}', color: '#10b981', icon: '/mistral and devstral.png', supportsThinking: false },
+  { id: 'deepseek-v3.2',label: 'DeepSeek V3.2',   description: 'Deep research & analysis',                abbr: 'DS', color: '#06b6d4', icon: '/deepseek.png', supportsThinking: true  },
+  { id: 'mistral-large',label: 'Mistral Large',   description: 'Creative writing & long-form',            abbr: 'ML', color: '#ec4899', icon: '/mistral and devstral.png', supportsThinking: false },
+  { id: 'qwen3.5',      label: 'Qwen 3.5',        description: 'Powerful all-rounder',                    abbr: 'Q3', color: '#f97316', icon: '/qwen.png', supportsThinking: true  },
+  { id: 'glm5',         label: 'GLM5',            description: 'General purpose',                         abbr: 'G5', color: '#64748b', icon: '/GLM.png', supportsThinking: true  },
 ];
 
 // -----------------------------------------------------------------
@@ -100,7 +160,7 @@ export function classifyIntent(question) {
 
 function shouldUseThinking(question, intent, modelKey, thinkingMode = 'auto') {
   const cfg = NVIDIA_REGISTRY[modelKey];
-  if (!cfg?.thinkingKwargs) return false; // model doesn't support thinking at all
+  if (!cfg?.thinkingKwargs && !cfg?.inlineThinking) return false; // model doesn't support thinking at all
 
   if (thinkingMode === 'on')  return true;   // user forced thinking ON
   if (thinkingMode === 'off') return false;  // user forced thinking OFF
@@ -119,6 +179,65 @@ async function readSSEStream(body, onChunk, onThinkingChunk) {
   const decoder = new TextDecoder();
   let fullContent = '';
   let buffer = '';
+  let inlineBuffer = '';
+  let inInlineThinking = false;
+  let answerStarted = false;
+
+  const emitAnswer = (token) => {
+    if (!token) return;
+    answerStarted = true;
+    fullContent += token;
+    onChunk?.(token);
+  };
+
+  const emitThinking = (token) => {
+    if (token && onThinkingChunk) onThinkingChunk(token);
+  };
+
+  const processContentToken = (token, flush = false) => {
+    if (!token && !flush) return;
+    inlineBuffer += token;
+
+    while (inlineBuffer) {
+      if (inInlineThinking) {
+        const closeIndex = inlineBuffer.indexOf('</think>');
+        if (closeIndex === -1) {
+          const safeLength = flush ? inlineBuffer.length : Math.max(0, inlineBuffer.length - 8);
+          emitThinking(inlineBuffer.slice(0, safeLength));
+          inlineBuffer = inlineBuffer.slice(safeLength);
+          return;
+        }
+
+        emitThinking(inlineBuffer.slice(0, closeIndex));
+        inlineBuffer = inlineBuffer.slice(closeIndex + '</think>'.length);
+        inInlineThinking = false;
+        continue;
+      }
+
+      const openIndex = inlineBuffer.indexOf('<think>');
+      const closeIndex = inlineBuffer.indexOf('</think>');
+
+      if (openIndex !== -1 && (closeIndex === -1 || openIndex < closeIndex)) {
+        emitAnswer(inlineBuffer.slice(0, openIndex));
+        inlineBuffer = inlineBuffer.slice(openIndex + '<think>'.length);
+        inInlineThinking = true;
+        continue;
+      }
+
+      // Some providers stream hidden thinking as leading content and only expose </think>.
+      if (!answerStarted && closeIndex !== -1) {
+        emitThinking(inlineBuffer.slice(0, closeIndex));
+        inlineBuffer = inlineBuffer.slice(closeIndex + '</think>'.length);
+        inInlineThinking = false;
+        continue;
+      }
+
+      const safeLength = flush ? inlineBuffer.length : Math.max(0, inlineBuffer.length - 8);
+      emitAnswer(inlineBuffer.slice(0, safeLength));
+      inlineBuffer = inlineBuffer.slice(safeLength);
+      return;
+    }
+  };
 
   try {
     while (true) {
@@ -139,15 +258,12 @@ async function readSSEStream(body, onChunk, onThinkingChunk) {
 
           // Emit reasoning/thinking tokens separately so the UI can show progress
           // while the model is in its internal reasoning phase
-          const thinkToken = delta.reasoning_content ?? '';
-          if (thinkToken && onThinkingChunk) onThinkingChunk(thinkToken);
+          const thinkToken = delta.reasoning_content ?? delta.reasoning ?? '';
+          emitThinking(thinkToken);
 
           // Only accumulate & emit actual answer content
           const token = delta.content ?? '';
-          if (token) {
-            fullContent += token;
-            onChunk?.(token);
-          }
+          processContentToken(token);
         } catch { /* skip malformed chunk */ }
       }
     }
@@ -159,17 +275,15 @@ async function readSSEStream(body, onChunk, onThinkingChunk) {
         try {
           const data = JSON.parse(payload);
           const delta = data.choices?.[0]?.delta ?? {};
-          const thinkToken = delta.reasoning_content ?? '';
-          if (thinkToken && onThinkingChunk) onThinkingChunk(thinkToken);
+          const thinkToken = delta.reasoning_content ?? delta.reasoning ?? '';
+          emitThinking(thinkToken);
           const token = delta.content ?? '';
-          if (token) {
-            fullContent += token;
-            onChunk?.(token);
-          }
+          processContentToken(token);
         } catch { /* skip malformed final chunk */ }
       }
     }
   } finally {
+    processContentToken('', true);
     reader.releaseLock();
   }
   return fullContent;
@@ -183,7 +297,8 @@ async function callNvidiaModel(messages, modelKey, useThinking, signal, onChunk,
   if (!cfg) throw new Error(`Unknown model: ${modelKey}`);
 
   const isLocalDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  const chatTemplateKwargs = useThinking ? cfg.thinkingKwargs : undefined;
+  const chatTemplateKwargs = useThinking ? cfg.thinkingKwargs : cfg.chatTemplateKwargs;
+  const reasoningBudget = useThinking ? cfg.reasoningBudget : undefined;
 
   let response;
 
@@ -197,6 +312,8 @@ async function callNvidiaModel(messages, modelKey, useThinking, signal, onChunk,
       stream: true
     };
     if (cfg.topK !== undefined) payload.top_k = cfg.topK;
+    if (cfg.reasoningEffort) payload.reasoning_effort = cfg.reasoningEffort;
+    if (reasoningBudget !== undefined) payload.reasoning_budget = reasoningBudget;
     if (chatTemplateKwargs) payload.chat_template_kwargs = chatTemplateKwargs;
 
     response = await fetch('/nvidia-local', {
@@ -216,6 +333,8 @@ async function callNvidiaModel(messages, modelKey, useThinking, signal, onChunk,
         maxTokens: cfg.maxTokens,
         topP: cfg.topP,
         topK: cfg.topK,
+        reasoningEffort: cfg.reasoningEffort,
+        reasoningBudget,
         chatTemplateKwargs,
         stream: true
       }),
@@ -448,7 +567,7 @@ Memory rules:
 
     const systemPrompt = `You are a helpful, knowledgeable, and friendly AI assistant — part of LinkDok (https://linkdok.in), an AI-powered productivity platform built by Sudhanshu Kumar.
 
-About LinkDok: LinkDok is a smart bookmark manager that lets users save links, organize them into categories, and chat with an AI that has actually read those pages. It also includes an AI Playground (free chat mode) powered by multiple state-of-the-art AI models via NVIDIA NIM — including Kimi K2.5, DeepSeek V3, Devstral, Mistral Large, Step Flash, Qwen 3.5, and GLM5. LinkDok is free, requires no signup, and stores all data locally in the browser.
+About LinkDok: LinkDok is a smart bookmark manager that lets users save links, organize them into categories, and chat with an AI that has actually read those pages. It also includes an AI Playground (free chat mode) powered by multiple state-of-the-art AI models via NVIDIA NIM — including Kimi K2.6, DeepSeek V4, Nemotron, Mistral, Gemma, MiniMax, Sarvam, Qwen, Step Flash, and GLM. LinkDok is free, requires no signup, and stores all data locally in the browser.
 
 About the Creator: LinkDok was built by Sudhanshu Kumar, Founder & Full Stack Developer at https://linkdok.in. He is currently pursuing his BS degree in CSDA at IIT Patna. He is also the co-creator of DroidScope UX Intelligence, built with team "LastCrusade", which won 1st place at DroidRun DevSprint 2026. He specialises in full-stack web development, AI product architecture, serverless infrastructure (Vercel), and startup-oriented product development. LinkedIn: https://www.linkedin.com/in/sudhanshu-kumar-info/
 

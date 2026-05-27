@@ -32,20 +32,6 @@ const MAX_TEXT_BYTES  = 500 * 1024;       // 500 KB for text files
 const MAX_PDF_BYTES   = 20 * 1024 * 1024; // 20 MB for PDFs
 const MAX_IMAGES      = 5;                // max images per message
 
-const SUGGESTED_QUESTIONS = [
-  "Summarize the key topics in these resources",
-  "What are the most important concepts I should know?",
-  "Give me a short quiz on this material",
-  "What questions should I ask to understand this better?",
-];
-
-const PLAYGROUND_SUGGESTIONS = [
-  "Explain quantum computing in simple terms",
-  "Write a Python function to reverse a linked list",
-  "What are the pros and cons of microservices?",
-  "Help me debug this: why does 0.1 + 0.2 !== 0.3 in JS?",
-];
-
 // Custom code block renderer for ReactMarkdown
 function CodeBlock({ node, inline, className, children, ...props }) {
   const [copied, setCopied] = useState(false);
@@ -684,8 +670,6 @@ function ChatPage({
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSubmit(e); }
   };
 
-  const handleSuggestedQuestion = (q) => { setInput(q); textareaRef.current?.focus(); };
-
   // -- Edit & re-ask -----------------------------------------------
   const handleSaveEdit = async (index) => {
     if (!editingText.trim()) return;
@@ -776,7 +760,9 @@ function ChatPage({
                 className="model-selector-badge"
                 style={{ background: `${currentModelInfo.color}22`, color: currentModelInfo.color, borderColor: `${currentModelInfo.color}44` }}
               >
-                {currentModelInfo.abbr}
+                {currentModelInfo.icon
+                  ? <img src={currentModelInfo.icon} alt="" className="model-provider-icon" />
+                  : currentModelInfo.abbr}
               </span>
               <span className="model-selector-label">{currentModelInfo.label}</span>
               <ChevronDown size={13} className={`model-chevron ${modelDropOpen ? "open" : ""}`} />
@@ -797,7 +783,9 @@ function ChatPage({
                         className="model-opt-badge"
                         style={{ background: `${m.color}22`, color: m.color, borderColor: `${m.color}44` }}
                       >
-                        {m.abbr}
+                        {m.icon
+                          ? <img src={m.icon} alt="" className="model-provider-icon" />
+                          : m.abbr}
                       </span>
                       <span className="model-opt-info">
                         <span className="model-opt-label">{m.label}</span>
@@ -872,51 +860,9 @@ function ChatPage({
 
         {messages.length === 0 && (
           <div className="chat-welcome">
-            {customApp ? (
-              <>
-                <div className="chat-welcome-icon custom-app-welcome-icon">✦</div>
-                <h3>{customApp.name}</h3>
-                <p>This custom app will answer from its master prompt and improve with saved memory.</p>
-                <div className="suggested-questions">
-                  {[
-                    "Start by asking what you remember about my goals",
-                    "Make a practical plan for me",
-                    "Ask me questions to personalize your advice",
-                    "Give me expert feedback on my current approach",
-                  ].map(q => (
-                    <button key={q} className="suggested-chip" onClick={() => handleSuggestedQuestion(q)}>
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : isPlayground ? (
-              <>
-                <div className="chat-welcome-icon playground-icon">✦</div>
-                <h3>Ask me anything</h3>
-                <p>A free AI playground — pick a model and start a conversation.</p>
-                <div className="suggested-questions">
-                  {PLAYGROUND_SUGGESTIONS.map(q => (
-                    <button key={q} className="suggested-chip" onClick={() => handleSuggestedQuestion(q)}>
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="chat-welcome-icon">?</div>
-                <h3>Ask about {category.name}</h3>
-                <p>I can answer questions about the resources in this category, or anything else you need.</p>
-                <div className="suggested-questions">
-                  {SUGGESTED_QUESTIONS.map(q => (
-                    <button key={q} className="suggested-chip" onClick={() => handleSuggestedQuestion(q)}>
-                      {q}
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
+            <p className="chat-welcome-simple">
+              {customApp ? `Ask ${customApp.name} anything.` : isPlayground ? "Ask anything." : "Ask anything about your links."}
+            </p>
           </div>
         )}
 

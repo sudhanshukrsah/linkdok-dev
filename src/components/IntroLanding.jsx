@@ -275,18 +275,18 @@ function IntroLanding({ onComplete, categories, onAddCategory, onAddLink, isDark
                   {[{
                     dir: 'left',
                     items: [
-                      { name: 'Kimi K2.5',     color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.3)'  },
+                      { name: 'Kimi K2.6',     color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.3)'  },
                       { name: 'Devstral',      color: '#f97316', bg: 'rgba(249,115,22,0.13)',  bd: 'rgba(249,115,22,0.3)'  },
-                      { name: 'GLM5',          color: '#06b6d4', bg: 'rgba(6,182,212,0.13)',   bd: 'rgba(6,182,212,0.3)'   },
-                      { name: 'DeepSeek V3.2', color: '#8b5cf6', bg: 'rgba(139,92,246,0.13)',  bd: 'rgba(139,92,246,0.3)'  },
+                      { name: 'GLM 5.1',          color: '#06b6d4', bg: 'rgba(6,182,212,0.13)',   bd: 'rgba(6,182,212,0.3)'   },
+                      { name: 'DeepSeek V4', color: '#8b5cf6', bg: 'rgba(139,92,246,0.13)',  bd: 'rgba(139,92,246,0.3)'  },
                     ],
                   }, {
                     dir: 'right',
                     items: [
                       { name: 'Mistral Large', color: '#f59e0b', bg: 'rgba(245,158,11,0.13)',  bd: 'rgba(245,158,11,0.3)'  },
-                      { name: 'Qwen 3.5',      color: '#ec4899', bg: 'rgba(236,72,153,0.13)',  bd: 'rgba(236,72,153,0.3)'  },
+                      { name: 'Qwen Coder',      color: '#ec4899', bg: 'rgba(236,72,153,0.13)',  bd: 'rgba(236,72,153,0.3)'  },
                       { name: 'Step Flash',    color: '#10b981', bg: 'rgba(16,185,129,0.13)',  bd: 'rgba(16,185,129,0.3)'  },
-                      { name: 'Kimi K2.5',     color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.3)'  },
+                      { name: 'Kimi K2.6',     color: '#3b82f6', bg: 'rgba(59,130,246,0.13)',  bd: 'rgba(59,130,246,0.3)'  },
                     ],
                   }].map(({ dir, items }) => (
                     <div key={dir} className="il-mq-track">
