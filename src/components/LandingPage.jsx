@@ -111,6 +111,22 @@ function AnimatedProductPreview() {
 
 function LandingPage({ onGetStarted, isDarkMode }) {
   const pageRef = useRef(null);
+  const transitionTimerRef = useRef(null);
+  const [isOpening, setIsOpening] = useState(false);
+  const [transitionOrigin, setTransitionOrigin] = useState(null);
+
+  const handleGetStarted = (event) => {
+    if (isOpening) return;
+    const buttonBounds = event.currentTarget.getBoundingClientRect();
+    setTransitionOrigin({
+      x: buttonBounds.left + buttonBounds.width / 2,
+      y: buttonBounds.top + buttonBounds.height / 2,
+    });
+    setIsOpening(true);
+    transitionTimerRef.current = window.setTimeout(onGetStarted, 650);
+  };
+
+  useEffect(() => () => window.clearTimeout(transitionTimerRef.current), []);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -138,6 +154,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
 
   return (
     <div className={`ld-page ${isDarkMode ? 'ld-dark' : 'ld-light'}`} ref={pageRef}>
+      {isOpening && <div className="ld-page-transition" style={{ '--ld-transition-x': `${transitionOrigin?.x || 0}px`, '--ld-transition-y': `${transitionOrigin?.y || 0}px` }} aria-hidden="true" />}
       <header className="ld-nav">
         <a className="ld-brand" href="#top" aria-label="LinkDok home">
           <img src={isDarkMode ? '/LinkDok-logo.svg' : '/LinkDok-logo-day.svg'} alt="LinkDok" />
@@ -147,7 +164,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
           <a href="#models">AI models</a>
           <a href="#research">Research flow</a>
         </nav>
-        <button className="ld-nav-cta" onClick={onGetStarted}>Open LinkDok <ArrowUpRight size={15} /></button>
+        <button className="ld-nav-cta" onClick={handleGetStarted}>Open LinkDok <ArrowUpRight size={15} /></button>
       </header>
 
       <main id="top">
@@ -156,7 +173,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
             <h1>Save it. <em>Ask it.</em></h1>
             <p className="ld-hero-description">A knowledge base for everything you want to explore.</p>
             <div className="ld-hero-actions">
-              <button className="ld-button-primary" onClick={onGetStarted}>Get started <ArrowRight size={17} /></button>
+              <button className="ld-button-primary" onClick={handleGetStarted}>Get started <ArrowRight size={17} /></button>
             </div>
           </div>
 
@@ -219,7 +236,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
               <div className="ld-model-feature-copy"><span className="ld-model-card-index">04 / ROUTE</span><h3>Let the question find its model.</h3><p>Use Auto routing when you want LinkDok to pick a fitting model for the next step in your research.</p></div>
             </article>
           </div>
-          <button className="ld-inline-link ld-model-explore" onClick={onGetStarted}>Explore the models <ArrowRight size={16} /></button>
+          <button className="ld-inline-link ld-model-explore" onClick={handleGetStarted}>Explore the models <ArrowRight size={16} /></button>
         </section>
 
         <section className="ld-research" id="research">
@@ -232,7 +249,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
           </div>
         </section>
 
-        <section className="ld-last-call" data-reveal><div className="ld-last-mark"><Sparkles size={21} /></div><span className="ld-section-tag">YOUR NEXT QUESTION HAS A HOME</span><h2>Make your saved links<br />work <em>together.</em></h2><p>Build a knowledge base that can answer back.</p><button className="ld-button-primary" onClick={onGetStarted}>Open your LinkDok <ArrowRight size={17} /></button><span className="ld-last-asterisk">✳</span></section>
+          <section className="ld-last-call" data-reveal><div className="ld-last-mark"><Sparkles size={21} /></div><span className="ld-section-tag">YOUR NEXT QUESTION HAS A HOME</span><h2>Make your saved links<br />work <em>together.</em></h2><p>Build a knowledge base that can answer back.</p><button className="ld-button-primary" onClick={handleGetStarted}>Open your LinkDok <ArrowRight size={17} /></button><span className="ld-last-asterisk">✳</span></section>
       </main>
 
       <footer className="ld-footer"><a href="#top"><img src={isDarkMode ? '/LinkDok-logo.svg' : '/LinkDok-logo-day.svg'} alt="LinkDok" /></a><span>Your links. Your knowledge. Your next idea.</span><a href="/help.html" target="_blank" rel="noreferrer">Explore the guide <ArrowUpRight size={13} /></a><span className="ld-copyright">© {new Date().getFullYear()} LINKDOK</span></footer>
