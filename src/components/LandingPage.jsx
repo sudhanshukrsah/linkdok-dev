@@ -161,6 +161,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
           </div>
 
           <div className="ld-scene" aria-label="Preview of research grounded in a LinkDok knowledge base">
+            <img className="ld-scene-map" src="/map.png" alt="" aria-hidden="true" />
             <AnimatedProductPreview />
           </div>
         </section>
