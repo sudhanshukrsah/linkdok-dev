@@ -128,6 +128,7 @@ function ChatPage({
   const clientHitsRef = useRef([]);     // timestamps for client-side soft rate limit
   const userStoppedRef = useRef(false);  // distinguish user-stop from external aborts
   const thinkingAccumRef = useRef("");     // accumulates reasoning_content tokens
+  const thinkingFrameRef = useRef(null);
   const speechRecRef = useRef(null);
   const dragDepthRef = useRef(0);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
@@ -185,6 +186,7 @@ function ChatPage({
       clearTimeout(rateLimitTimerRef.current);
       speechRecRef.current?.stop?.();
       cancelAnimationFrame(streamFrameRef.current);
+      cancelAnimationFrame(thinkingFrameRef.current);
     };
   }, []);
 
@@ -221,8 +223,14 @@ function ChatPage({
     thinkingAccumRef.current = "";
     return (token) => {
       thinkingAccumRef.current += token;
-      // Throttle: update UI every ~100ms max
-      setThinkingContent(thinkingAccumRef.current);
+      // Reasoning streams can be extremely token-heavy. Batch UI updates and
+      // retain only the recent trace shown in the bubble to keep chat responsive.
+      if (!thinkingFrameRef.current) {
+        thinkingFrameRef.current = requestAnimationFrame(() => {
+          setThinkingContent(thinkingAccumRef.current.slice(-2000));
+          thinkingFrameRef.current = null;
+        });
+      }
     };
   }, []);
 
@@ -538,6 +546,7 @@ function ChatPage({
           basedOnResources: response.basedOnResources,
           modelUsed: response.modelUsed,
           intent: response.intent,
+          webSources: response.webSources,
         },
       };
     } catch (err) {
@@ -560,6 +569,8 @@ function ChatPage({
       }
       throw err;
     } finally {
+      cancelAnimationFrame(thinkingFrameRef.current);
+      thinkingFrameRef.current = null;
       setIsStreaming(false);
       setIsLoading(false);
       setStreamingContent("");
@@ -799,6 +810,16 @@ function ChatPage({
                     <div className="message-meta">
                       <span className="meta-model">{msg.metadata.modelUsed.replace('openrouter:', '').split('/').pop()}</span>
                       {msg.metadata.intent && <span className="meta-intent">{msg.metadata.intent}</span>}
+                    </div>
+                  )}
+                  {msg.metadata?.webSources?.length > 0 && (
+                    <div className="web-sources">
+                      <span className="web-sources-title">Web sources</span>
+                      {msg.metadata.webSources.map((source, sourceIndex) => (
+                        <a key={`${source.url}-${sourceIndex}`} href={source.url} target="_blank" rel="noreferrer" title={source.url}>
+                          [{sourceIndex + 1}] {source.title}
+                        </a>
+                      ))}
                     </div>
                   )}
                   <button className="message-action-btn copy-btn" onClick={() => handleCopy(msg.content, idx)} title="Copy">

@@ -6,23 +6,13 @@ import { rateLimit, getIP, setCorsHeaders, isOriginAllowed, validateMessages } f
 
 // NVIDIA model ID allow-list – must stay in sync with NVIDIA_REGISTRY in aiTutor.js
 const ALLOWED_MODELS = new Set([
-  'moonshotai/kimi-k2.6',                      // kimi-k2.6
-  'mistralai/mistral-medium-3.5-128b',         // mistral-medium-3.5
-  'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning', // nemotron-nano
-  'deepseek-ai/deepseek-v4-flash',             // deepseek-v4-flash
-  'deepseek-ai/deepseek-v4-pro',               // deepseek-v4-pro
-  'z-ai/glm-5.1',                              // glm-5.1
-  'minimaxai/minimax-m2.7',                    // minimax-m2.7
-  'google/gemma-4-31b-it',                     // gemma-4-31b
-  'nvidia/nemotron-3-super-120b-a12b',         // nemotron-super
-  'sarvamai/sarvam-m',                         // sarvam-m
-  'qwen/qwen3-coder-480b-a35b-instruct',       // qwen3-coder
-  'stepfun-ai/step-3.5-flash',                 // step-flash
-  'mistralai/devstral-2-123b-instruct-2512',   // devstral
-  'deepseek-ai/deepseek-v3.2',                  // deepseek-v3.2
-  'mistralai/mistral-large-3-675b-instruct-2512', // mistral-large
-  'qwen/qwen3.5-397b-a17b',                    // qwen3.5
-  'z-ai/glm5',                                  // glm5
+  'z-ai/glm-5.3',
+  'z-ai/glm-5.3-flash',
+  'moonshotai/kimi-k3',
+  'meta/muse-glimmer-30b',
+  'nvidia/nemotron-3-ultra-550b-a55b',
+  'google/gemma-4-31b-it',
+  'openai/gpt-oss-20b',
 ]);
 
 export default async function handler(req, res) {
@@ -56,7 +46,7 @@ export default async function handler(req, res) {
   const NVIDIA_API_KEY = process.env.VITE_NVIDIA_API_KEY;
 
   if (!NVIDIA_API_KEY) {
-    // 200 + failure so client-side fallback chain (OpenRouter) kicks in cleanly
+    // Return a structured configuration error to the client.
     return res.status(200).json({
       success: false,
       error: 'NVIDIA API key not configured — set VITE_NVIDIA_API_KEY in Vercel dashboard'
@@ -82,7 +72,7 @@ export default async function handler(req, res) {
     if (msgError) return res.status(400).json({ error: msgError });
 
     // Validate model – only allow known NVIDIA models
-    const resolvedModel = model || 'moonshotai/kimi-k2.6';
+    const resolvedModel = model || 'z-ai/glm-5.3-flash';
     if (!ALLOWED_MODELS.has(resolvedModel)) {
       return res.status(400).json({ error: 'Unknown model requested' });
     }
@@ -123,14 +113,17 @@ export default async function handler(req, res) {
       res.setHeader('Content-Type', 'text/event-stream');
       res.setHeader('Cache-Control', 'no-cache');
       res.setHeader('Connection', 'keep-alive');
+      res.setHeader('X-Accel-Buffering', 'no');
+      res.flushHeaders?.();
 
       const reader = response.body.getReader();
-      const decoder = new TextDecoder();
       try {
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          res.write(decoder.decode(value, { stream: true }));
+          // Forward the raw SSE bytes. Decoding and re-encoding each chunk can
+          // drop a character when a UTF-8 sequence crosses a chunk boundary.
+          res.write(Buffer.from(value));
         }
       } finally {
         reader.releaseLock();

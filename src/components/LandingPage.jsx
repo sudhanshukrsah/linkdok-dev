@@ -187,23 +187,23 @@ function LandingPage({ onGetStarted, isDarkMode }) {
               <div className="ld-model-visual ld-orbit-visual" aria-hidden="true">
                 <span className="ld-orbit-ring ld-orbit-ring-one" /><span className="ld-orbit-ring ld-orbit-ring-two" />
                 <span className="ld-orbit-core"><Brain size={24} /></span>
-                {[modelInfo[0], modelInfo[3], modelInfo[6]].map((model, index) => <span className={`ld-orbit-logo ld-orbit-logo-${index + 1}`} key={model.id}><img src={model.icon} alt="" /></span>)}
+                {[modelInfo[0], modelInfo[2], modelInfo[4]].map((model, index) => <span className={`ld-orbit-logo ld-orbit-logo-${index + 1}`} key={model.id}>{model.icon ? <img src={model.icon} alt="" /> : model.abbr}</span>)}
                 <span className="ld-visual-label">YOUR MODEL LINEUP</span>
               </div>
               <div className="ld-model-feature-copy"><span className="ld-model-card-index">01 / CHOOSE</span><h3>One thread. Many minds.</h3><p>Choose from {AVAILABLE_MODELS.length - 1} frontier and specialist models, then keep your source-grounded conversation moving.</p></div>
             </article>
             <article className="ld-model-feature-card" data-reveal>
               <div className="ld-model-visual ld-compare-visual" aria-hidden="true">
-                {[modelInfo[3], modelInfo[0]].map((model, index) => <div className={`ld-answer-preview ld-answer-preview-${index + 1}`} key={model.id}><div className="ld-answer-preview-head"><img src={model.icon} alt="" /><span>{model.label}</span></div><i /><i /><i /></div>)}
+                {[modelInfo[2], modelInfo[4]].map((model, index) => <div className={`ld-answer-preview ld-answer-preview-${index + 1}`} key={model.id}><div className="ld-answer-preview-head">{model.icon ? <img src={model.icon} alt="" /> : <b>{model.abbr}</b>}<span>{model.label}</span></div><i /><i /><i /></div>)}
                 <span className="ld-compare-mark">VS</span>
               </div>
               <div className="ld-model-feature-copy"><span className="ld-model-card-index">02 / COMPARE</span><h3>See how answers differ.</h3><p>Bring another model into the same question and compare its reasoning against your saved sources.</p></div>
             </article>
             <article className="ld-model-feature-card" data-reveal>
               <div className="ld-model-visual ld-debate-visual" aria-hidden="true">
-                <div className="ld-debate-side ld-debate-side-one"><img src={modelInfo[0].icon} alt="" /><span>Kimi</span><i>Make the strongest case.</i></div>
+                <div className="ld-debate-side ld-debate-side-one"><img src={modelInfo[2].icon} alt="" /><span>{modelInfo[2].label}</span><i>Make the strongest case.</i></div>
                 <span className="ld-debate-vs">VS</span>
-                <div className="ld-debate-side ld-debate-side-two"><img src={modelInfo[3].icon} alt="" /><span>DeepSeek</span><i>Challenge the evidence.</i></div>
+                <div className="ld-debate-side ld-debate-side-two"><img src={modelInfo[4].icon} alt="" /><span>{modelInfo[4].label}</span><i>Challenge the evidence.</i></div>
                 <span className="ld-debate-pulse" />
               </div>
               <div className="ld-model-feature-copy"><span className="ld-model-card-index">03 / DEBATE</span><h3>Let ideas challenge ideas.</h3><p>Ask models to defend different sides, surface disagreement, and test what your sources support.</p></div>
@@ -212,7 +212,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
               <div className="ld-model-visual ld-routing-visual" aria-hidden="true">
                 <span className="ld-routing-question"><Search size={17} /></span>
                 <span className="ld-routing-path ld-routing-path-one" /><span className="ld-routing-path ld-routing-path-two" /><span className="ld-routing-path ld-routing-path-three" />
-                <div className="ld-routing-options">{[modelInfo[2], modelInfo[4], modelInfo[8]].map((model, index) => <span className={`ld-routing-option ld-routing-option-${index + 1}`} key={model.id}><img src={model.icon} alt="" /></span>)}</div>
+                <div className="ld-routing-options">{[modelInfo[1], modelInfo[2], modelInfo[4]].map((model, index) => <span className={`ld-routing-option ld-routing-option-${index + 1}`} key={model.id}>{model.icon ? <img src={model.icon} alt="" /> : model.abbr}</span>)}</div>
                 <span className="ld-routing-auto"><Sparkles size={13} /> Auto <i>BEST FIT</i></span>
               </div>
               <div className="ld-model-feature-copy"><span className="ld-model-card-index">04 / ROUTE</span><h3>Let the question find its model.</h3><p>Use Auto routing when you want LinkDok to pick a fitting model for the next step in your research.</p></div>

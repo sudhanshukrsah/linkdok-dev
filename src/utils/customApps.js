@@ -77,11 +77,11 @@ export async function enhancePromptWithAI(appName, originalPrompt) {
   const fallback = createEnhancedPrompt(appName, originalPrompt);
 
   try {
-    const response = await fetch("/api/chat", {
+    const response = await fetch("/api/nvidia", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        model: "tngtech/deepseek-r1t2-chimera:free",
+        model: "z-ai/glm-5.3-flash",
         temperature: 0.2,
         maxTokens: 1800,
         messages: [

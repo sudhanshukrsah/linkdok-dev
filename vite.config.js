@@ -32,6 +32,22 @@ export default defineConfig(({ mode }) => {
               proxyReq.setHeader('Accept', 'text/event-stream');
             });
           }
+        },
+        // Local Tavily proxy: lets `npm run dev` use web search without
+        // exposing the key to the browser. Production uses /api/search.
+        '/tavily-local': {
+          target: 'https://api.tavily.com',
+          changeOrigin: true,
+          rewrite: () => '/search',
+          headers: {
+            Authorization: `Bearer ${env.TAVILY_API_KEY || env.VITE_TVLY_API_KEY}`,
+          },
+          configure: (proxy) => {
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.setHeader('Authorization', `Bearer ${env.TAVILY_API_KEY || env.VITE_TVLY_API_KEY}`);
+              proxyReq.setHeader('Accept', 'application/json');
+            });
+          }
         }
       }
     }

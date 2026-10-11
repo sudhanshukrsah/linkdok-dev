@@ -1,26 +1,25 @@
 /**
- * AI Service using OpenRouter API via Serverless Functions
+ * AI service using NVIDIA NIM via the serverless function.
  * API keys are kept secure on the server
  */
 
 // Use serverless API endpoint instead of direct API calls
-const API_ENDPOINT = '/api/chat';
+const API_ENDPOINT = '/api/nvidia';
 
 // Primary model - most cost-effective
-const PRIMARY_MODEL = 'tngtech/deepseek-r1t2-chimera:free';
+const PRIMARY_MODEL = 'z-ai/glm-5.3-flash';
 
 // Fallback models if primary fails
 const FALLBACK_MODELS = [
-  'nex-agi/deepseek-v3.1-nex-n1:free',
-  'google/gemini-2.0-flash-exp:free',
-  'qwen/qwen-2.5-vl-7b-instruct:free',
-  'google/gemma-3-27b-it:free'
+  'z-ai/glm-5.3',
+  'google/gemma-4-31b-it',
+  'openai/gpt-oss-20b'
 ];
 
 /**
- * Make a request to OpenRouter via serverless function with fallback support
+ * Make a request to NVIDIA NIM via the serverless function with fallback support.
  */
-async function callOpenRouter(prompt) {
+async function callNvidia(prompt) {
   const modelsToTry = [PRIMARY_MODEL, ...FALLBACK_MODELS];
   let lastError = null;
 
@@ -196,7 +195,7 @@ Content: ${truncatedDesc}
 Write only the summary, nothing else.`;
 
   try {
-    const summary = await callOpenRouter(prompt);
+    const summary = await callNvidia(prompt);
     const cleaned = summary.trim();
     
     // Log for debugging

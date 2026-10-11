@@ -1685,6 +1685,34 @@ body.light-mode .think-pill-off {
   border: 1px solid var(--border);
 }
 
+.web-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.65rem;
+  margin-top: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.web-sources-title {
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.web-sources a {
+  max-width: 220px;
+  overflow: hidden;
+  color: #60a5fa;
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.web-sources a:hover {
+  color: #93c5fd;
+  text-decoration: underline;
+}
+
 .meta-intent {
   text-transform: capitalize;
 }
