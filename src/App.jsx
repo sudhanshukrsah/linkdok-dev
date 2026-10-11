@@ -6,7 +6,7 @@ import CustomSelect from './components/CustomSelect';
 import AddCategoryModal from './components/AddCategoryModal';
 import ChatHistory from './components/ChatHistory';
 import ChatPage from './components/ChatPage';
-import IntroLanding from './components/IntroLanding';
+import LandingPage from './components/LandingPage';
 import CustomAppModal from './components/CustomAppModal';
 
 import { extractContentFromURL } from './utils/contentExtractor';
@@ -24,25 +24,7 @@ import './App.css';
 import { Analytics } from "@vercel/analytics/react"
 
 function App() {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    // Check if device is mobile
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  const [showIntroVideo, setShowIntroVideo] = useState(() => {
-    // Check if user has visited before
-    const hasVisited = localStorage.getItem('linkdok_visited');
-    return !hasVisited;
-  });
+  const [isLandingPage, setIsLandingPage] = useState(() => sessionStorage.getItem('linkdok_landing_seen') !== 'true');
 
   const [categories, setCategories] = useState(() => {
     // Initialize from localStorage
@@ -672,13 +654,19 @@ function App() {
   };
 
   const handleToggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    if (window.innerWidth > 1024) {
+      setIsSidebarOpen(true);
+      setIsSidebarCollapsed(true);
+      return;
+    }
+
+    setIsSidebarOpen(prev => !prev);
   };
 
   const handleToggleCollapse = () => {
     // Only works on desktop
     if (window.innerWidth > 1024) {
-      setIsSidebarCollapsed(!isSidebarCollapsed);
+      setIsSidebarCollapsed(prev => !prev);
     }
   };
 
@@ -778,26 +766,15 @@ function App() {
       });
   }, [categories, debouncedSearchQuery, searchResults, filterCategory]);
 
-  const handleIntroComplete = () => {
-    // Mark that user has visited
-    localStorage.setItem('linkdok_visited', 'true');
-    setShowIntroVideo(false);
-  };
-
   return (
     <>
-      {showIntroVideo && (
-        <IntroLanding
-          onComplete={handleIntroComplete}
-          categories={categories}
-          onAddCategory={addCategory}
-          onAddLink={addLink}
-          isDarkMode={isDarkMode}
-          onToggleTheme={() => setIsDarkMode(d => !d)}
-        />
+      {isLandingPage && (
+        <LandingPage isDarkMode={isDarkMode} onGetStarted={() => {
+          sessionStorage.setItem('linkdok_landing_seen', 'true');
+          setIsLandingPage(false);
+        }} />
       )}
-      
-      <div className="app" style={showIntroVideo ? { display: 'none' } : undefined}>
+      <div className="app" style={isLandingPage ? { display: 'none' } : undefined}>
       {/* Chat History Sidebar - Always render on desktop, conditionally on mobile */}
       <ChatHistory
         categories={categories}
@@ -823,7 +800,7 @@ function App() {
       />
 
       {/* Main Content Area */}
-      <div className={`main-app-container ${currentView === 'chat' || currentView === 'freechat' || currentView === 'customapp' ? 'chat-view' : ''}`}>
+      <div className={`main-app-container ${currentView === 'chat' || currentView === 'freechat' || currentView === 'customapp' ? 'chat-view' : ''} ${(!isSidebarOpen || isSidebarCollapsed) ? 'sidebar-closed' : ''}`}>
         {currentView === 'freechat' && activeFreeSession ? (
           <ChatPage
             key={`freechat-${activeFreeSession.id}`}

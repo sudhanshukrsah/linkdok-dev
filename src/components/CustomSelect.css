@@ -173,3 +173,32 @@ body.light-mode .csel-option:hover {
 body.light-mode .csel-option--active {
   background: rgba(59, 130, 246, 0.1);
 }
+
+/* Shared LinkDok select treatment */
+.csel-trigger {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+}
+
+.csel-trigger:hover,
+.csel-trigger--open {
+  background: var(--accent-soft);
+  border-color: var(--border-strong);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.csel-list {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+
+.csel-option:hover,
+.csel-option--active,
+.csel-option--active:hover {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+}

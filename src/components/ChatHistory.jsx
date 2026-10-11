@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import { 
-  MessageSquare, 
-  PanelLeftClose, 
+import {
+  MessageSquare,
+  PanelLeftClose,
   PanelLeftOpen,
   Home,
   Sparkles,
@@ -15,9 +15,9 @@ import './ChatHistory.css';
 
 const FREE_CHAT_MODELS = ['Kimi K2.6', 'Mistral Medium', 'DeepSeek V4', 'Nemotron'];
 
-function ChatHistory({ 
+function ChatHistory({
   categories,
-  activeCategory, 
+  activeCategory,
   onSelectCategory,
   onGoHome,
   isOpen,
@@ -57,8 +57,8 @@ function ChatHistory({
   return (
     <>
       {isOpen && (
-        <div 
-          className="sidebar-overlay" 
+        <div
+          className="sidebar-overlay"
           onClick={onToggleSidebar}
         />
       )}
@@ -72,7 +72,7 @@ function ChatHistory({
             <button className="collapsed-btn" onClick={onGoHome} title="Home">
               <Home size={20} />
             </button>
-            <button 
+            <button
               className={`collapsed-btn ${isFreeChat ? 'active' : ''}`}
               onClick={onNewFreeChat}
               title="Try AI Models"
@@ -117,7 +117,7 @@ function ChatHistory({
                 <Home size={20} />
                 <span>Home</span>
               </button>
-              <button 
+              <button
                 className="sidebar-toggle-btn"
                 onClick={isOpen ? onToggleSidebar : onToggleCollapse}
                 title="Close sidebar"

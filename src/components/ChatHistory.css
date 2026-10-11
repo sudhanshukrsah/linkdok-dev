@@ -17,6 +17,7 @@
   top: 0;
   bottom: 0;
   width: 260px;
+  box-sizing: border-box;
   background-color: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
@@ -95,15 +96,20 @@
   }
 
   .chat-history {
-    position: fixed;
-    left: 0 !important;
+    position: relative;
+    left: auto !important;
+    top: auto;
+    bottom: auto;
+    flex: 0 0 260px;
+    height: 100vh;
     box-shadow: none;
     border-right: 1px solid var(--border);
     z-index: 100;
   }
-  
+
   .chat-history.collapsed {
     width: 60px;
+    flex-basis: 60px;
   }
 }
 
@@ -112,23 +118,25 @@
   .chat-history {
     left: -260px;
   }
-  
+
   .chat-history.open {
     left: 0;
   }
-  
+
   .chat-history.collapsed {
     width: 260px;
   }
-  
+
   .collapsed-sidebar {
     display: none !important;
   }
 }
 
 .chat-history-header {
-  padding: 0.75rem;
-  border-bottom: 1px solid var(--border);
+  min-height: 72px;
+  padding: 0.75rem 0.7rem;
+  box-sizing: border-box;
+  border-bottom: 1px solid rgba(112, 194, 183, 0.14);
   display: flex;
   gap: 0.5rem;
   align-items: center;
@@ -140,8 +148,8 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.625rem 0.75rem;
-  background-color: transparent;
-  border: 1px solid var(--border);
+  background: rgba(66, 180, 163, 0.08);
+  border: 1px solid rgba(95, 202, 184, 0.18);
   border-radius: 8px;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -152,7 +160,7 @@
 }
 
 .home-btn:hover {
-  background-color: var(--bg-tertiary);
+  background-color: rgba(66, 180, 163, 0.14);
 }
 
 .sidebar-toggle-btn {
@@ -169,8 +177,8 @@
 }
 
 .sidebar-toggle-btn:hover {
-  background-color: var(--bg-tertiary);
-  color: var(--text-primary);
+  background-color: rgba(66, 180, 163, 0.12);
+  color: #d5f4ed;
 }
 
 /* ── Free Chat Entry Button ── */
@@ -184,8 +192,8 @@
   gap: 0.5rem;
   width: 100%;
   padding: 0.6rem 0.85rem;
-  background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(139,92,246,0.1) 100%);
-  border: 1px solid rgba(99,102,241,0.25);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.1) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 10px;
   color: var(--text-primary);
   font-size: 0.875rem;
@@ -198,14 +206,14 @@
 }
 
 .free-chat-btn:hover {
-  background: linear-gradient(135deg, rgba(99,102,241,0.18) 0%, rgba(139,92,246,0.18) 100%);
-  border-color: rgba(99,102,241,0.5);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.18) 0%, rgba(139, 92, 246, 0.18) 100%);
+  border-color: rgba(99, 102, 241, 0.5);
   transform: translateY(-1px);
 }
 
 .free-chat-btn.active {
-  background: linear-gradient(135deg, rgba(99,102,241,0.22) 0%, rgba(139,92,246,0.22) 100%);
-  border-color: rgba(99,102,241,0.6);
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.22) 0%, rgba(139, 92, 246, 0.22) 100%);
+  border-color: rgba(99, 102, 241, 0.6);
 }
 
 .free-chat-icon {
@@ -500,6 +508,70 @@
   padding: 0.75rem 0;
   gap: 0.5rem;
   z-index: 100;
+}
+
+/* Sidebar uses the same surface and interaction language as chat. */
+.chat-history,
+.chat-history-collapsed {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 30%), var(--bg-secondary);
+  border-color: var(--border);
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.16);
+}
+
+.chat-history-header {
+  border-bottom-color: var(--border);
+}
+
+.home-btn,
+.chat-edit-input {
+  background: rgba(87, 205, 184, 0.04);
+  border-color: var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.home-btn:hover,
+.sidebar-toggle-btn:hover,
+.collapsed-btn:hover,
+.icon-nav-btn:hover,
+.apps-create-mini:hover,
+.chat-action-btn:hover,
+.chat-item:hover {
+  background: var(--accent-soft);
+}
+
+.free-chat-btn {
+  background: linear-gradient(135deg, rgba(87, 205, 184, 0.14), rgba(28, 94, 84, 0.18));
+  border-color: var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.free-chat-btn:hover,
+.free-chat-btn.active,
+.chat-item.active {
+  background: rgba(87, 205, 184, 0.16);
+  border-color: var(--border-strong);
+}
+
+.free-chat-icon,
+.free-chat-plus,
+.app-chat-item .chat-item-button svg {
+  color: var(--accent);
+}
+
+.free-chat-model-name {
+  color: var(--accent-hover);
+  background: none;
+  -webkit-text-fill-color: currentColor;
+}
+
+.chat-group-label {
+  color: var(--text-muted);
+}
+
+.chat-item,
+.collapsed-btn,
+.icon-nav-btn {
+  border-radius: var(--radius-sm);
 }
 
 .icon-nav-btn {

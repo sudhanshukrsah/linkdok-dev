@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle, Mic, MicOff } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -25,12 +25,12 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 // File type helpers
 const IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/svg+xml"];
-const TEXT_TYPES  = ["text/plain", "text/markdown", "text/csv", "text/javascript", "text/typescript",
-                     "application/json", "application/xml", "text/html", "text/css"];
+const TEXT_TYPES = ["text/plain", "text/markdown", "text/csv", "text/javascript", "text/typescript",
+  "application/json", "application/xml", "text/html", "text/css"];
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024; // 5 MB per image
-const MAX_TEXT_BYTES  = 500 * 1024;       // 500 KB for text files
-const MAX_PDF_BYTES   = 20 * 1024 * 1024; // 20 MB for PDFs
-const MAX_IMAGES      = 5;                // max images per message
+const MAX_TEXT_BYTES = 500 * 1024;       // 500 KB for text files
+const MAX_PDF_BYTES = 20 * 1024 * 1024; // 20 MB for PDFs
+const MAX_IMAGES = 5;                // max images per message
 const ATTACHMENT_ONLY_PROMPT = "Please analyze the attached image or file. If it contains text, read it and explain the important details.";
 
 // Custom code block renderer for ReactMarkdown
@@ -97,39 +97,39 @@ function ChatPage({
   appMemory = null,
   onMemoryUpdate = null,
 }) {
-  const [input, setInput]                     = useState("");
-  const [isLoading, setIsLoading]             = useState(false);
-  const [isStreaming, setIsStreaming]          = useState(false);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
-  const [editingIndex, setEditingIndex]       = useState(null);
-  const [editingText, setEditingText]         = useState("");
-  const [copiedIndex, setCopiedIndex]         = useState(null);
-  const [attachments, setAttachments]         = useState([]);     // [{name, type:"image"|"text", data, mimeType, preview?}]
-  const [selectedModel, setSelectedModel]     = useState("auto");
-  const [modelDropOpen, setModelDropOpen]     = useState(false);
-  const [attachError, setAttachError]         = useState("");
-  const [voiceError, setVoiceError]           = useState("");
-  const [voiceInterim, setVoiceInterim]       = useState("");
-  const [isListening, setIsListening]         = useState(false);
-  const [isDragActive, setIsDragActive]       = useState(false);
-  const [rateLimitMsg, setRateLimitMsg]       = useState("");
-  const [thinkingMode, setThinkingMode]       = useState("auto"); // 'auto' | 'on' | 'off'
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editingText, setEditingText] = useState("");
+  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [attachments, setAttachments] = useState([]);     // [{name, type:"image"|"text", data, mimeType, preview?}]
+  const [selectedModel, setSelectedModel] = useState("auto");
+  const [modelDropOpen, setModelDropOpen] = useState(false);
+  const [attachError, setAttachError] = useState("");
+  const [voiceError, setVoiceError] = useState("");
+  const [voiceInterim, setVoiceInterim] = useState("");
+  const [isListening, setIsListening] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [rateLimitMsg, setRateLimitMsg] = useState("");
+  const [thinkingMode, setThinkingMode] = useState("auto"); // 'auto' | 'on' | 'off'
   const [thinkingContent, setThinkingContent] = useState("");     // live reasoning tokens
 
-  const messagesEndRef    = useRef(null);
-  const chatMessagesRef   = useRef(null);   // the scrollable container
-  const textareaRef       = useRef(null);
-  const fileInputRef      = useRef(null);
-  const abortRef          = useRef(null);
-  const streamAccumRef    = useRef("");
-  const streamFrameRef    = useRef(null);
-  const modelDropRef      = useRef(null);
+  const messagesEndRef = useRef(null);
+  const chatMessagesRef = useRef(null);   // the scrollable container
+  const textareaRef = useRef(null);
+  const fileInputRef = useRef(null);
+  const abortRef = useRef(null);
+  const streamAccumRef = useRef("");
+  const streamFrameRef = useRef(null);
+  const modelDropRef = useRef(null);
   const rateLimitTimerRef = useRef(null);   // auto-clear the rate-limit banner
-  const clientHitsRef     = useRef([]);     // timestamps for client-side soft rate limit
-  const userStoppedRef    = useRef(false);  // distinguish user-stop from external aborts
-  const thinkingAccumRef  = useRef("");     // accumulates reasoning_content tokens
-  const speechRecRef      = useRef(null);
-  const dragDepthRef      = useRef(0);
+  const clientHitsRef = useRef([]);     // timestamps for client-side soft rate limit
+  const userStoppedRef = useRef(false);  // distinguish user-stop from external aborts
+  const thinkingAccumRef = useRef("");     // accumulates reasoning_content tokens
+  const speechRecRef = useRef(null);
+  const dragDepthRef = useRef(0);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
 
   // Smart scroll: only auto-scroll if user is already near the bottom
@@ -467,14 +467,14 @@ function ChatPage({
 
   const readAsDataURL = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result);
+    reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 
   const readAsText = (file) => new Promise((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload  = () => resolve(reader.result);
+    reader.onload = () => resolve(reader.result);
     reader.onerror = reject;
     reader.readAsText(file);
   });
@@ -582,8 +582,8 @@ function ChatPage({
       if (!allResponses.length) {
         setInput("");
         onUpdateMessages([...messages,
-          { role: "user", content: userText },
-          { role: "assistant", content: "Abhi koi AI response nahi hai export karne ke liye. Pehle kuch poochho!" },
+        { role: "user", content: userText },
+        { role: "assistant", content: "Abhi koi AI response nahi hai export karne ke liye. Pehle kuch poochho!" },
         ]);
         return;
       }
@@ -619,7 +619,7 @@ function ChatPage({
       } catch (err) {
         console.error("PDF export error:", err);
         onUpdateMessages([...messages, userMsg,
-          { role: "assistant", content: "⚠️ PDF generate karne mein error aa gaya. Please dobara try karo." },
+        { role: "assistant", content: "⚠️ PDF generate karne mein error aa gaya. Please dobara try karo." },
         ]);
       }
       return;
@@ -701,7 +701,7 @@ function ChatPage({
   // -- Copy --------------------------------------------------------
   const handleCopy = async (content, idx) => {
     try { await navigator.clipboard.writeText(content); setCopiedIndex(idx); setTimeout(() => setCopiedIndex(null), 2000); }
-    catch {}
+    catch { }
   };
 
   // -- Clear -------------------------------------------------------
@@ -727,7 +727,7 @@ function ChatPage({
 
   const thinkingLabel = thinkingMode === 'on' ? 'On'
     : thinkingMode === 'off' ? 'Off'
-    : 'Auto';
+      : 'Auto';
 
   // ----------------------------------------------------------------
   return (
@@ -749,88 +749,6 @@ function ChatPage({
             alt="LinkDok"
             className="chat-logo"
           />
-        </div>
-
-        <div className="chat-header-center">
-          {/* Model selector dropdown */}
-          <div className="model-selector-wrap" ref={modelDropRef}>
-            <button
-              className="model-selector-btn"
-              onClick={() => setModelDropOpen(o => !o)}
-              title="Select AI model"
-            >
-              <span
-                className="model-selector-badge"
-                style={{ background: `${currentModelInfo.color}22`, color: currentModelInfo.color, borderColor: `${currentModelInfo.color}44` }}
-              >
-                {currentModelInfo.icon
-                  ? <img src={currentModelInfo.icon} alt="" className="model-provider-icon" />
-                  : currentModelInfo.abbr}
-              </span>
-              <span className="model-selector-label">{currentModelInfo.label}</span>
-              <ChevronDown size={13} className={`model-chevron ${modelDropOpen ? "open" : ""}`} />
-            </button>
-
-            {modelDropOpen && (
-              <div className="model-dropdown">
-                <div className="model-dropdown-header">Choose AI Model</div>
-                {AVAILABLE_MODELS.map(m => {
-                  const isSelected = m.id === selectedModel;
-                  return (
-                    <button
-                      key={m.id}
-                      className={`model-option ${isSelected ? "active" : ""}`}
-                      onClick={() => { setSelectedModel(m.id); setModelDropOpen(false); }}
-                    >
-                      <span
-                        className="model-opt-badge"
-                        style={{ background: `${m.color}22`, color: m.color, borderColor: `${m.color}44` }}
-                      >
-                        {m.icon
-                          ? <img src={m.icon} alt="" className="model-provider-icon" />
-                          : m.abbr}
-                      </span>
-                      <span className="model-opt-info">
-                        <span className="model-opt-label">{m.label}</span>
-                        <span className="model-opt-desc">{m.description}</span>
-                      </span>
-
-                      {/* Thinking pill — only on thinking-capable models */}
-                      {m.supportsThinking && (
-                        <span
-                          role="button"
-                          className={`model-think-pill${
-                            isSelected
-                              ? thinkingMode === 'on'  ? ' think-pill-on'
-                              : thinkingMode === 'off' ? ' think-pill-off'
-                              : ' think-pill-auto'
-                              : ' think-pill-idle'
-                          }`}
-                          title={
-                            isSelected
-                              ? thinkingMode === 'on'  ? 'Thinking ON — click to set Auto'
-                              : thinkingMode === 'off' ? 'Thinking OFF — click to set Auto'
-                              : 'Thinking Auto — click to turn ON'
-                              : 'Supports thinking — click to select & enable'
-                          }
-                          onClick={e => handleThinkingPillClick(e, m.id)}
-                        >
-                          <Sparkles size={10} />
-                          {isSelected ? thinkingLabel : ''}
-                        </span>
-                      )}
-
-                      {isSelected && <Check size={14} className="model-opt-check" />}
-                    </button>
-                  );
-                })}
-                <div className="model-dropdown-footer">
-                  <Sparkles size={9} /> = thinking mode toggle
-                </div>
-              </div>
-            )}
-          </div>
-
         </div>
 
         <div className="chat-header-actions">
@@ -930,7 +848,7 @@ function ChatPage({
                 {thinkingContent && !streamingContent && (
                   <div className="thinking-bubble">
                     <div className="thinking-bubble-header">
-                      <div className="thinking-orbs mini"><span/><span/><span/></div>
+                      <div className="thinking-orbs mini"><span /><span /><span /></div>
                       <span>Thinking…</span>
                     </div>
                     <div className="thinking-bubble-body">
@@ -940,12 +858,12 @@ function ChatPage({
                 )}
 
                 <div className="markdown-content">
-                {streamingContent
+                  {streamingContent
                     ? <ReactMarkdown remarkPlugins={[remarkGfm]} components={{ code: CodeBlock }}>{streamingContent}</ReactMarkdown>
                     : !thinkingContent && (
                       <div className="ai-thinking-indicator">
                         <div className="thinking-orbs">
-                          <span/><span/><span/>
+                          <span /><span /><span />
                         </div>
                         <div className="thinking-text">
                           <span className="thinking-label">
@@ -1027,25 +945,6 @@ function ChatPage({
             onChange={handleFileSelect}
           />
 
-          <button
-            type="button"
-            className="attach-btn"
-            title="Attach file or image"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Paperclip size={18} />
-          </button>
-
-          <button
-            type="button"
-            className={`voice-btn ${isListening ? "listening" : ""}`}
-            title={isListening ? "Stop voice input" : "Start voice input"}
-            onClick={handleVoiceInput}
-            disabled={isLoading || isStreaming}
-          >
-            {isListening ? <MicOff size={18} /> : <Mic size={18} />}
-          </button>
-
           <textarea
             ref={textareaRef}
             value={input}
@@ -1060,15 +959,113 @@ function ChatPage({
             disabled={isLoading}
           />
 
-          {isStreaming ? (
-            <button type="button" className="stop-btn" onClick={handleStop} title="Stop generation">
-              <Square size={16} fill="currentColor" />
-            </button>
-          ) : (
-            <button type="submit" disabled={(!input.trim() && attachments.length === 0) || isLoading} className="send-btn" title="Send">
-              <Send size={18} />
-            </button>
-          )}
+          <div className="composer-bottom">
+            <div className="composer-tools">
+              <button
+                type="button"
+                className="attach-btn"
+                title="Attach file or image"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                <Paperclip size={18} />
+              </button>
+              <div className="model-selector-wrap" ref={modelDropRef}>
+                <button
+                  type="button"
+                  className="model-selector-btn"
+                  onClick={() => setModelDropOpen(o => !o)}
+                  title="Select AI model"
+                >
+                  <span
+                    className="model-selector-badge"
+                    style={{ background: `${currentModelInfo.color}22`, color: currentModelInfo.color, borderColor: `${currentModelInfo.color}44` }}
+                  >
+                    {currentModelInfo.icon
+                      ? <img src={currentModelInfo.icon} alt="" className="model-provider-icon" />
+                      : currentModelInfo.abbr}
+                  </span>
+                  <span className="model-selector-label">{currentModelInfo.label}</span>
+                  <ChevronDown size={13} className={`model-chevron ${modelDropOpen ? "open" : ""}`} />
+                </button>
+                {modelDropOpen && (
+                  <div className="model-dropdown">
+                    <div className="model-dropdown-header">Choose AI Model</div>
+                    <div className="model-dropdown-scroll">
+                      {AVAILABLE_MODELS.map(m => {
+                        const isSelected = m.id === selectedModel;
+                        return (
+                          <button
+                            type="button"
+                            key={m.id}
+                            className={`model-option ${isSelected ? "active" : ""}`}
+                            onClick={() => { setSelectedModel(m.id); setModelDropOpen(false); }}
+                          >
+                            <span
+                              className="model-opt-badge"
+                              style={{ background: `${m.color}22`, color: m.color, borderColor: `${m.color}44` }}
+                            >
+                              {m.icon
+                                ? <img src={m.icon} alt="" className="model-provider-icon" />
+                                : m.abbr}
+                            </span>
+                            <span className="model-opt-info">
+                              <span className="model-opt-label">{m.label}</span>
+                              <span className="model-opt-desc">{m.description}</span>
+                            </span>
+                            {m.supportsThinking && (
+                              <span
+                                role="button"
+                                className={`model-think-pill${isSelected
+                                    ? thinkingMode === 'on' ? ' think-pill-on'
+                                      : thinkingMode === 'off' ? ' think-pill-off'
+                                        : ' think-pill-auto'
+                                    : ' think-pill-idle'
+                                  }`}
+                                title={
+                                  isSelected
+                                    ? thinkingMode === 'on' ? 'Thinking ON — click to set Auto'
+                                      : thinkingMode === 'off' ? 'Thinking OFF — click to set Auto'
+                                        : 'Thinking Auto — click to turn ON'
+                                    : 'Supports thinking — click to select & enable'
+                                }
+                                onClick={e => handleThinkingPillClick(e, m.id)}
+                              >
+                                <Sparkles size={10} />
+                                {isSelected ? thinkingLabel : ''}
+                              </span>
+                            )}
+                            {isSelected && <Check size={14} className="model-opt-check" />}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    <div className="model-dropdown-footer"><Sparkles size={9} /> = thinking mode toggle</div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="composer-actions">
+              <button
+                type="button"
+                className={`voice-btn ${isListening ? "listening" : ""}`}
+                title={isListening ? "Stop voice input" : "Start voice input"}
+                onClick={handleVoiceInput}
+                disabled={isLoading || isStreaming}
+              >
+                {isListening ? <MicOff size={18} /> : <Mic size={18} />}
+              </button>
+              {isStreaming ? (
+                <button type="button" className="stop-btn" onClick={handleStop} title="Stop generation">
+                  <Square size={16} fill="currentColor" />
+                </button>
+              ) : (
+                <button type="submit" disabled={(!input.trim() && attachments.length === 0) || isLoading} className="send-btn" title="Send">
+                  <Send size={18} />
+                </button>
+              )}
+            </div>
+          </div>
         </form>
         <p className="ai-disclaimer">AI can make mistakes. Please double-check important responses.</p>
       </div>
