@@ -165,7 +165,7 @@ function LandingPage({ onGetStarted, isDarkMode }) {
           </div>
         </section>
 
-        <section className="ld-marquee" aria-label="AI models available in LinkDok"><div className="ld-marquee-track">{[...modelInfo, ...modelInfo].map((model, index) => <span className="ld-marquee-model" key={`${model.id}-${index}`}>{model.icon && <img className="ld-model-logo" src={model.icon} alt="" />}{model.label}</span>)}</div></section>
+        <section className="ld-marquee" aria-label="AI models available in LinkDok"><div className="ld-marquee-track">{[0, 1, 2, 3].map((groupIndex) => <div className="ld-marquee-group" aria-hidden={groupIndex > 0} key={groupIndex}>{modelInfo.map((model) => <span className="ld-marquee-model" key={model.id}>{model.icon && <img className="ld-model-logo" src={model.icon} alt="" />}{model.label}</span>)}</div>)}</div></section>
 
         <section className="ld-workspace" id="workspace">
           <div className="ld-section-intro" data-reveal><span className="ld-section-tag">A KNOWLEDGE BASE THAT STARTS WITH YOU</span><h2>Don’t just save a link.<br />Give it <em>somewhere to go.</em></h2><p>Build a living library from the articles, videos, research and ideas you already collect. Then ask better questions of all of it.</p></div>

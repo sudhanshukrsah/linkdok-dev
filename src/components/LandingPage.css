@@ -133,7 +133,8 @@
 .ld-index-line { display: block; width: 42px; height: 1px; background: var(--ld-line); }
 
 .ld-marquee { min-height: 57px; border-top: 1px solid var(--ld-line); border-bottom: 1px solid var(--ld-line); overflow: hidden; display: flex; align-items: center; background: color-mix(in srgb, var(--ld-panel) 42%, transparent); backdrop-filter: blur(8px); }
-.ld-marquee-track { min-width: max-content; display: flex; align-items: center; gap: 35px; animation: ld-marquee 42s linear infinite; }
+.ld-marquee-track { width: max-content; display: flex; align-items: center; animation: ld-marquee 42s linear infinite; }
+.ld-marquee-group { display: flex; align-items: center; gap: 35px; padding-right: 35px; flex: 0 0 auto; }
 .ld-marquee-model { display: inline-flex; align-items: center; gap: 8px; color: var(--ld-muted); font-size: 9px; font-weight: 600; }
 .ld-model-logo { width: 18px; height: 18px; flex: 0 0 auto; padding: 2px; border: 1px solid var(--ld-line); border-radius: 5px; object-fit: contain; background: color-mix(in srgb, var(--ld-panel-solid) 82%, transparent); }
 
@@ -295,7 +296,7 @@
 @keyframes ld-breathe { 0%,100% { transform: scale(.96); opacity: .68; } 50% { transform: scale(1.06); opacity: 1; } }
 @keyframes ld-float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
 @keyframes ld-spin { to { transform: rotate(360deg); } }
-@keyframes ld-marquee { to { transform: translateX(-50%); } }
+@keyframes ld-marquee { to { transform: translateX(-25%); } }
 
 @media (max-width: 1050px) {
   .ld-hero { grid-template-columns: .85fr 1.15fr; padding-left: 32px; padding-right: 32px; gap: 8px; }
@@ -350,7 +351,7 @@
   .ld-sparkle-one { top: -7px; left: 17px; }
   .ld-hero-index { right: 22px; bottom: 16px; }
   .ld-marquee { min-height: 48px; }
-  .ld-marquee-track { gap: 24px; }
+  .ld-marquee-group { gap: 24px; padding-right: 24px; }
   .ld-marquee-model { font-size: 8px; }
   .ld-workspace, .ld-research { padding: 78px 23px 84px; }
   .ld-section-intro h2, .ld-model-section-head h2, .ld-research-head h2 { font-size: 40px; }
@@ -418,7 +419,7 @@
 .ld-card-menu > div { height: 31px; padding: 0 8px; display: flex; align-items: center; gap: 8px; border-radius: 6px; color: var(--ld-card-muted); font-size: 10px; font-weight: 600; }
 .ld-card-menu > div svg { color: var(--ld-accent); }
 .ld-card-menu > .ld-card-add-link { color: var(--ld-card-ink); animation: ld-card-row-highlight 20s ease-in-out infinite; }
-.ld-card-pointer { position: absolute; z-index: 4; left: 0; top: 0; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); animation: ld-card-cursor-path 20s cubic-bezier(.4,0,.2,1) infinite; }
+.ld-card-pointer { --ld-pointer-start-x: calc(100% - 39px); --ld-pointer-start-y: 14px; position: absolute; z-index: 4; left: 0; top: 0; pointer-events: none; filter: drop-shadow(0 1px 2px rgba(0,0,0,.6)); animation: ld-card-cursor-path 20s cubic-bezier(.22,.8,.24,1) infinite; }
 .ld-card-chat { width: min(100%, 770px); height: calc(100% - 64px - 78px - 57px); min-height: 0; margin: auto; padding: 9px 3px 6px; display: flex; flex-direction: column; gap: 7px; overflow-y: auto; overflow-x: hidden; scrollbar-width: none; scroll-behavior: smooth; border-top: 1px solid var(--ld-card-line); mask-image: linear-gradient(to bottom, transparent, #000 8%, #000 100%); }
 .ld-card-chat::-webkit-scrollbar { display: none; }
 .ld-card-message { flex: 0 0 auto; min-height: 22px; display: flex; align-items: flex-end; gap: 7px; animation: ld-card-message-in .32s cubic-bezier(.22,1,.36,1) both; }
@@ -436,13 +437,13 @@
 .ld-card-input-plus { width: 16px; text-align: center; color: var(--ld-accent); font-size: 16px; }
 .ld-card-placeholder { overflow: hidden; color: var(--ld-card-muted); font-size: 9px; text-overflow: ellipsis; white-space: nowrap; }
 .ld-card-send { width: 26px; height: 26px; margin-left: auto; display: grid; place-items: center; border-radius: 50%; background: color-mix(in srgb, var(--ld-accent) 20%, transparent); color: var(--ld-accent); }
-.ld-card-send svg { transform: rotate(-45deg); }
+.ld-card-send svg { transform: none; }
 .ld-glass-orbit, .ld-sparkle, .ld-hero-index { display: none; }
 @keyframes ld-card-arrive { from { opacity: 0; transform: translateY(13px) scale(.985); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes ld-card-plus-tap { 0%,40%,53%,100% { transform: scale(1); box-shadow: none; } 44% { transform: scale(.82); box-shadow: 0 0 0 4px rgba(76,151,233,.16); } 49% { transform: scale(1.08); box-shadow: 0 0 0 7px rgba(76,151,233,0); } }
 @keyframes ld-card-menu-cycle { 0%,44% { opacity: 0; transform: scale(.96) translateY(-5px); } 49%,75% { opacity: 1; transform: scale(1) translateY(0); } 82%,100% { opacity: 0; transform: scale(.96) translateY(-5px); } }
 @keyframes ld-card-row-highlight { 0%,61% { background: transparent; } 66%,76% { background: color-mix(in srgb, var(--ld-accent) 12%, transparent); } 83%,100% { background: transparent; } }
-@keyframes ld-card-cursor-path { 0%,31% { left: 91%; top: 7%; opacity: 0; } 35% { left: 91%; top: 7%; opacity: 1; } 43% { left: 87%; top: 13%; opacity: 1; } 48% { left: 87%; top: 13%; opacity: 1; } 61% { left: 76%; top: 28%; opacity: 1; } 74% { left: 76%; top: 28%; opacity: 1; } 82%,100% { left: 76%; top: 28%; opacity: 0; } }
+@keyframes ld-card-cursor-path { 0%,34% { left: var(--ld-pointer-start-x); top: var(--ld-pointer-start-y); opacity: 0; } 38%,50% { left: var(--ld-pointer-start-x); top: var(--ld-pointer-start-y); opacity: 1; } 59% { left: 76%; top: 28%; opacity: 1; } 75% { left: 76%; top: 28%; opacity: 1; } 82%,100% { left: 76%; top: 28%; opacity: 0; } }
 @keyframes ld-card-message-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
 @keyframes ld-card-dot-bounce { 0%,60%,100% { opacity: .45; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
 @keyframes ld-card-caret-blink { 50% { opacity: 0; } }
@@ -457,6 +458,7 @@
   .ld-animated-card { height: 410px; padding: 0 11px 11px; border-radius: 19px; }
   .ld-card-topbar { height: 57px; margin: 0 -11px; padding: 0 14px; }
   .ld-card-controls > span { width: 30px; height: 30px; }
+  .ld-card-pointer { --ld-pointer-start-x: calc(100% - 30px); --ld-pointer-start-y: 12px; }
   .ld-card-add-area { height: 68px; }
   .ld-card-menu { width: 190px; right: 4px; }
   .ld-card-menu > div { height: 27px; }
