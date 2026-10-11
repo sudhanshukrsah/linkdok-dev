@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle, Mic, MicOff } from "lucide-react";
+import { Send, Square, Moon, Sun, Copy, Edit2, Check, Trash2, Menu, Paperclip, X, ChevronDown, Image, Sparkles, HelpCircle, Mic, MicOff, Globe2, ExternalLink } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -32,6 +32,14 @@ const MAX_TEXT_BYTES = 500 * 1024;       // 500 KB for text files
 const MAX_PDF_BYTES = 20 * 1024 * 1024; // 20 MB for PDFs
 const MAX_IMAGES = 5;                // max images per message
 const ATTACHMENT_ONLY_PROMPT = "Please analyze the attached image or file. If it contains text, read it and explain the important details.";
+
+function sourceDomain(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "Web source";
+  }
+}
 
 // Custom code block renderer for ReactMarkdown
 function CodeBlock({ node, inline, className, children, ...props }) {
@@ -813,13 +821,24 @@ function ChatPage({
                     </div>
                   )}
                   {msg.metadata?.webSources?.length > 0 && (
-                    <div className="web-sources">
-                      <span className="web-sources-title">Web sources</span>
-                      {msg.metadata.webSources.map((source, sourceIndex) => (
-                        <a key={`${source.url}-${sourceIndex}`} href={source.url} target="_blank" rel="noreferrer" title={source.url}>
-                          [{sourceIndex + 1}] {source.title}
-                        </a>
-                      ))}
+                    <div className="web-sources" aria-label="Web sources used for this response">
+                      <div className="web-sources-header">
+                        <span className="web-sources-icon"><Globe2 size={14} /></span>
+                        <span className="web-sources-title">Web research</span>
+                        <span className="web-sources-count">{msg.metadata.webSources.length} sources</span>
+                      </div>
+                      <div className="web-sources-grid">
+                        {msg.metadata.webSources.map((source, sourceIndex) => (
+                          <a className="web-source-card" key={`${source.url}-${sourceIndex}`} href={source.url} target="_blank" rel="noreferrer" title={`Open ${source.title}`}>
+                            <span className="web-source-number">{sourceIndex + 1}</span>
+                            <span className="web-source-copy">
+                              <span className="web-source-name">{source.title}</span>
+                              <span className="web-source-domain">{sourceDomain(source.url)}</span>
+                            </span>
+                            <ExternalLink className="web-source-external" size={13} />
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
                   <button className="message-action-btn copy-btn" onClick={() => handleCopy(msg.content, idx)} title="Copy">
